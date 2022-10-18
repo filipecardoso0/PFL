@@ -2,8 +2,8 @@ module Parsing where
 import Data.List.Split
 import Data.Char
 
-type Termo = (Int, [(Char, Int)])
-type Polynomial = [Termo]
+type Term = (Int, [(Char, Int)])
+type Polynomial = [Term]
 
 
 --Input teste 
@@ -85,7 +85,7 @@ parseVar str
 
 
 --Pega num termo e faz o seu parsing para a representação final
-parseTermo :: String -> (Int, [(Char, Int)])
+parseTermo :: String -> Term
 parseTermo [] = error "Termo não existe"
 parseTermo str = (coef, (tupl))
     where 
@@ -93,7 +93,7 @@ parseTermo str = (coef, (tupl))
         tupl = [parseVar x | x <- tail (removeMult str)]
 
 
-parsePolinomio :: String -> [(Int, [(Char, Int)])]
+parsePolinomio :: String -> Polynomial
 parsePolinomio [] = error "Polinómio invalido"
 parsePolinomio str = [parseTermo x | x<-verifyStrs (addSignals (removeSpaces str))]
 
