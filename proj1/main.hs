@@ -1,6 +1,7 @@
 module Main where
 import System.Environment
 import System.IO
+import Parsing
 
 -- Separate this into other files later on
     
@@ -9,7 +10,7 @@ normalizepoly = do
     putStrLn "Introduza um polinomio-> Exemplo: (0*x^2 + 2*y + 5*z + y + 7*y^2)"
     temp <- getLine -- temp reads the new line created by putStrLn
     poly <- getLine 
-    putStrLn poly
+    --parsePolinomio poly
 
 addpoly :: IO()
 addpoly = do 
