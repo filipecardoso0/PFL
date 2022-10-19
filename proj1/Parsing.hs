@@ -2,13 +2,10 @@ module Parsing where
 import Data.List.Split
 import Data.Char
 
-type Term = (Int, [(Char, Int)])
+type Tuple = (Char,Int)
+type TupleList = [(Char,Int)]
+type Term = (Int, TupleList)
 type Polynomial = [Term]
-
-
---Input teste 
-str = "0*x^2 + 2*y + 5*z + y + 7*y^2"
-str1 = "x + 2*y + 5*z + y + 7*y^2"
 
 
 --Para efeitos de parsing da string : Utilizacao de todas as funcoes usadas para partir a string 
@@ -22,9 +19,6 @@ addSignals [] = []
 addSignals ("+":y:xs) = ("+"++y) : addSignals xs
 addSignals ("-":y:xs) = ("-"++y) : addSignals xs
 addSignals (x:xs) = x : addSignals xs
-
---Variavel para teste auxiliar
-str2 = addSignals (removeSpaces str)
 
 
 --Remove o sinal de multiplicacao em forma de separar os coeficiente e as variáveis de um termo
@@ -77,7 +71,7 @@ getPower str = tail (splitOn "^" (tail str))
 --Recebe variaveis de um termo por processar e transforma-a num tuplo char, int
 parseVar :: String -> (Char, Int)
 parseVar str 
-    | pow == [] = (var, 0) -- Se nao existir potencia entao corresponde a lista vazia
+    | pow == [] = (var, 1) -- Se nao existir potencia entao corresponde a lista vazia
     | otherwise = (var, read (head pow) :: Int) -- Pega no elemento à cabeça da lista(string da potencia) e transforma-o num inteiro
     where 
         var = head str
@@ -90,10 +84,20 @@ parseTermo [] = error "Termo não existe"
 parseTermo str = (coef, (tupl))
     where 
         coef = coeficiente (removeMult str)
-        tupl = [parseVar x | x <- tail (removeMult str)]
+        tupl = removeNonNecessary [parseVar x | x <- tail (removeMult str)]
+
 
 
 parsePolinomio :: String -> Polynomial
 parsePolinomio [] = error "Polinómio invalido"
 parsePolinomio str = [parseTermo x | x<-verifyStrs (addSignals (removeSpaces str))]
+
+poly = parsePolinomio str
+
+--function to remove tuples with exponent equal to 0
+removeNonNecessary :: TupleList -> TupleList
+removeNonNecessary [] = []
+removeNonNecessary ((x,y):xs) 
+  | (x >= 'a' && x <= 'z') == False = removeNonNecessary xs
+  | otherwise = (x,y): removeNonNecessary xs
 
