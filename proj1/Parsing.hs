@@ -41,15 +41,6 @@ verifyStrs [] = []
 verifyStrs [[]] = [[]]
 verifyStrs (l:ls) = fixExpr l : verifyStrs ls
 
--- Termos para testar apenas
-x = removeMult "2*x*y^2"
-y = removeMult "+3*x*y^2"
-z = removeMult "-3*x*y^2"
-w = removeMult "+y" 
-k = removeMult "-y^2*z^3"
-j = removeMult "+54*y^2*z^3"
-f = removeMult "54*x*y^2"
-
 
 --Recebe um termo por processar e extrai o coeficiente
 coeficiente :: [String] -> Int

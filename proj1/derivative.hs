@@ -2,15 +2,6 @@ module Derivative where
 import Normalize
 import Parsing
 
-t :: Term
-t = (7,[('y', 1),('z',2)])
-
-lst :: TupleList
-lst = [('y', 1),('z',2)]
-
-fds :: Polynomial
-fds = [(5,[('z',1)]),(-7,[('y',2)]),(7,[('y',1),('z',0)]),(1,[('y',1)]),(2,[('y',1)]),(1,[('x',1),('y',1),('y',1)]),(10,[]),(3,[])]
-p = normalizePoly fds 
 
 --Deriva um termo em ordem a uma determinada var
 

@@ -47,4 +47,3 @@ normalizePoly :: Polynomial -> Polynomial
 normalizePoly [] = []
 normalizePoly poly = reverse $ removeCoef0 (simplifyPoly (sortBy mycompare ([(fst x,addSameVariable (myisort((removeExp0 (snd x)))))  | x<-poly])))
 
-checkpt = normalizePoly [(5,[('z',1)]),(0,[('y',2)]),(7,[('y',1),('z',0)]),(1,[('y',1)]),(2,[('y',1)]),(1,[('x',1),('y',1),('y',1)]),(10,[]),(3,[])]
