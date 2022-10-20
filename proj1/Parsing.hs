@@ -92,7 +92,6 @@ parsePolinomio :: String -> Polynomial
 parsePolinomio [] = error "Polinómio invalido"
 parsePolinomio str = [parseTermo x | x<-verifyStrs (addSignals (removeSpaces str))]
 
-poly = parsePolinomio str
 
 --function to remove tuples with exponent equal to 0
 removeNonNecessary :: TupleList -> TupleList

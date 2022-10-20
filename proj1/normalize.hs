@@ -26,15 +26,6 @@ addSameVariable (x:y:xs)
   where n = (fst x, snd x + snd y)
 
 
-equalTerms :: Term -> Term -> Bool
-equalTerms t1 t2 
-    | varst1 == varst2 = True
-    | otherwise = False
-    where 
-        varst1 = snd t1
-        varst2 = snd t2
-
-
 simplifyPoly :: Polynomial -> Polynomial
 simplifyPoly [] = []
 simplifyPoly [x] = [x]
@@ -54,5 +45,6 @@ mycompare a b
 
 normalizePoly :: Polynomial -> Polynomial
 normalizePoly [] = []
-normalizePoly poly = reverse $ simplifyPoly (sortBy mycompare (removeCoef0 [(fst x,addSameVariable (myisort((removeExp0 (snd x)))))  | x<-poly]))
+normalizePoly poly = reverse $ removeCoef0 (simplifyPoly (sortBy mycompare ([(fst x,addSameVariable (myisort((removeExp0 (snd x)))))  | x<-poly])))
 
+checkpt = normalizePoly [(5,[('z',1)]),(0,[('y',2)]),(7,[('y',1),('z',0)]),(1,[('y',1)]),(2,[('y',1)]),(1,[('x',1),('y',1),('y',1)]),(10,[]),(3,[])]
