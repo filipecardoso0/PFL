@@ -2,11 +2,6 @@ module MultPoly where
 import Normalize
 import Parsing
 
-p1 :: Polynomial
-p1 = [(-12,[('x',2),('y',2)])]
-p2 :: Polynomial
-p2 = [(-4,[('x',2),('y',1)])]
-
 multTerm :: Term -> Term -> Term
 multTerm t1 t2 = (coef, newvars)
     where
@@ -22,9 +17,8 @@ multPoly :: [Polynomial] -> Polynomial
 multPoly [[]] = []
 multPoly [x] = x
 multPoly (x:y:[]) = mult2Poly x y
-multPoly (x:y:xs) =  (mult2Poly x y) ++ multPoly (xs)
+multPoly (x:y:xs) = normalizePoly (mult2Poly x y) ++ multPoly (xs)
 
+resmultPoly :: [Polynomial] -> Polynomial
+resmultPoly lst = normalizePoly (multPoly lst)
 
-t = multPoly [[(3, [('x',1),('y',1)]), (1,[('x',1)])]]
-res = normalizePoly $ multPoly [[(3, [('x',1),('y',1)]), (1,[('x',1)])] , [(-4, [('x',1),('y',1)])]]
-res1 = normalizePoly $ multPoly [[(3, [('x',1),('y',1)]), (1,[('x',1)])] , [(-4, [('x',1),('y',1)]), (-10, [('x',4),('y',3)])]]
