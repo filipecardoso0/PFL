@@ -17,8 +17,7 @@ multPoly :: [Polynomial] -> Polynomial
 multPoly [[]] = []
 multPoly [x] = x
 multPoly (x:y:[]) = mult2Poly x y
-multPoly (x:y:xs) = normalizePoly (mult2Poly x y) ++ multPoly (xs)
+multPoly (x:y:xs) = let res = normalizePoly (mult2Poly x y) in multPoly (res:xs)
 
 resmultPoly :: [Polynomial] -> Polynomial
 resmultPoly lst = normalizePoly (multPoly lst)
-
