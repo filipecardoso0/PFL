@@ -99,8 +99,39 @@ parseVar str
 
 Novamente através de uma lista de compreenção, por cada elemento da lista, mais propriamente por cada variável de cada termo, vai-se aplicar a função `parseVar`, que nos vai retornar a lista tuplos pretendida em `parseTerm`, dando uso a funções com `pow`, `head`, e `getPower`, cada tuplo com a variável e o seu respetivo expoente.
  
+- **normalizePoly**
 
+Tal como o nome indica, o objetivo da função `normalizePoly` vai ser colocar o polinómio da forma mais ordenada e "limpa" para ser possível uma melhor interpretação.
 
+```haskell
+normalizePoly :: Polynomial -> Polynomial
+normalizePoly [] = []
+normalizePoly poly = reverse $ removeCoef0 (simplifyPoly (sortBy mycompare ([(fst x,addSameVariable (myisort((removeExp0 (snd x)))))  | x<-poly])))
+```
+
+Para tal começamos por remover as variáveis em que o expoente seja nulo, dado que o resultado de qualquer variável é 1, e 1 é o elementro neutro da multiplicação. Para tal utiliza-se a funçao `removeExp0 (snd x)` para de cada `Term` aplicar sobre o segundo elemento, onde se encontram as variáveis armazenadas numa lista. De seguida, utilizamos a função `addSameVariable` que para casos em que o polinómio esta por exemplo `x*y*x`vai adicionar os expoentes das variáveis iguais, ficam `x^2*y`. Para terminar sao usadas as funções, `simplifyPoly`, que soma termos que têm as mesmas variáveis, e a `removeCoe0`, que remove termos em que o coeficente seja 0, dado que é o elemento neutro da multiplicação.
+
+- **sumPoly**
+
+Para a soma dos polinómios `sumPoly`, dá-se uso à função já criada `normalizePoly`, após se ter contacatenado todos os termos dos polinómios a que a soma é sujeita.
+
+```haskell
+sumPoly :: [Polynomial] -> Polynomial
+sumPoly [] = []
+sumPoly (x:xs) = normalizePoly (x ++ sumPoly (xs))
+```
+
+- **multPoly**
+
+No caso da multiplacação de polinómios, tem que se multiplcar 
+
+```haskell
+multPoly :: [Polynomial] -> Polynomial
+multPoly [[]] = []
+multPoly [x] = x
+multPoly (x:y:[]) = mult2Poly x y
+multPoly (x:y:xs) = let res = normalizePoly (mult2Poly x y) in multPoly (res:xs)
+```
 
 
 
