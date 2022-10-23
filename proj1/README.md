@@ -123,7 +123,7 @@ sumPoly (x:xs) = normalizePoly (x ++ sumPoly (xs))
 
 - **multPoly**
 
-No caso da multiplacação de polinómios, tem que se multiplcar 
+No caso da multiplicação o polinómio no inicio da lista é multiplicado pelos polinómios adjacentes de forma recursiva, sendo o resultado dos calculos intermédios guardado até ao polinómio adjacente ser a lista vazia. Assim, seria algo da forma: (((polinómio1 x polinómio2) x polinómio 3) x polinómio 4) x []
 
 ```haskell
 multPoly :: [Polynomial] -> Polynomial
