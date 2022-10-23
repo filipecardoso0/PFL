@@ -46,4 +46,3 @@ mycompare a b
 normalizePoly :: Polynomial -> Polynomial
 normalizePoly [] = []
 normalizePoly poly = reverse $ removeCoef0 (simplifyPoly (sortBy mycompare ([(fst x,addSameVariable (myisort((removeExp0 (snd x)))))  | x<-poly])))
-

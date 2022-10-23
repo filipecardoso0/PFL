@@ -80,7 +80,7 @@ parseTermo str = (coef, (tupl))
 
 
 parsePolinomio :: String -> Polynomial
-parsePolinomio [] = error "Polinómio invalido"
+parsePolinomio [] = []
 parsePolinomio str = [parseTermo x | x<-verifyStrs (addSignals (removeSpaces str))]
 
 
