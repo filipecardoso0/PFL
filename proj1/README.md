@@ -168,6 +168,14 @@ derivPoly var poly = normalizePoly $ [derivTerm var x | x<-poly]
 ```
 
 
+## **Authors**
+
+|Name | student nr | Group|
+|:-----:|:----:|:----:|
+Bruno Machado | up201907715| G12_06
+Filipe Cardoso | up202006409| G12_06
+Pedro Cardoso | 202004324| G12_06 
+
 
 
 
