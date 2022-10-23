@@ -11,7 +11,7 @@ Para este projeto, foi-nos pedido para realizar um programa em Haskell, capaz de
  
 ## **Descrição/Justificação da representação interna**
 
-> **Nota:** Para ajudar na interpretação vai ser usado o polinómio "0*x^2*y^3 + 2*y*z^2 + 5*z + 7*y^2" como exemplo
+> **Nota:** Para ajudar na interpretação vai ser usado o polinómio `"x^2*y^3 + 2*y*z^2 + 5*z + 7*y^2"` como exemplo
 
 Um polinómio normalmente é composto por vários termos, e cada um destes termos vai composto pelo o seu coeficiente, e as suas variáveis, e cada variável vai ter o seu expoente.
 Dado isto, para facilitar a representação de cada polinómios decidimos criar as seguintes variáveis:
@@ -59,11 +59,6 @@ Uma lista composta por todos os termos(Term) do polinómio.
 
 #### **parsePolinomio**
 
-
-```haskell
-parsePolinomio :: String -> Polynomial
-```
-
 No processo de parsing, `parsePolinomio` vai ser a nossa main function, que vai receber um polinómio em `String` e retornar esse mesmo polinómio já no tipo `Polynomial`, chamando várias funções no processo.
 
 ```haskell
@@ -72,24 +67,38 @@ parsePolinomio [] = []
 parsePolinomio str = [parseTermo x | x<-verifyStrs (addSignals (removeSpaces str))]
 ```
 
-- **removeSpaces e addSignals**
-   
+O polinómio recebido tem de ter cada termo separado por um espaço, e a função `removeSpaces` vai então remover esses espaços e retornar uma lista de strings, sendo os elementos os termos do polinomio e os sinais. Depois através da `addSignals` vai se adicionar o sinal ao respetivo termo. 
+
+
+#### **parseTermo e parseVar**
+
+Pela lista de compreensão em `parsePolinomio`, a função `parseTerm` vai receber cada termo do polinómio em `String` e retornar ja no tipo `Term`.
+
 ```haskell
-removeSpaces :: String -> [String]
+parseTermo :: String -> Term
+parseTermo [] = error "Termo não existe"
+parseTermo str = (coef, (tupl))
+    where
+        coef = coeficiente (removeMult str)
+        tupl = removeNonNecessary [parseVar x | x <- tail (removeMult str)]
 
-addSignals :: [String] -> [String]
-```
-O polinómio recebido tem de ter cada termo separado por um espaço, e a função `removeSpaces` vai então remover esses espaços e retornar uma lista de strings, sendo os elementos os termos do polinomio e os sinais. Depois através da `addSignals` vai se adicionar o sinal ao respetivo termo.
-
-```
-*Parsing> addSignals $ removeSpaces "2*x^2*y^3 + 2*y*z^2 + 5*z + 7*y^2"
-["2*x^2*y^3","+2*y*z^2","+5*z","+7*y^2"]
 ```
 
+`Term` vai ser um tuplo de forma (coef, (tupl)), em que para obter o primeiro elemento, que vai ser o coeficiente do termo,  vai se utilizar as funções auxiliares `removeMult` e `coeficiente`. A primeira, como o nome indica, vai retornar uma lista de strings, onde a string mãe e separada no '*'. Aplicando depois `coeficiente` que nos retorna o coefiente do termo.
+O segundo elemento, vai ser uma lista de tuplos ,de todas as variaveis e o seu respetivo expoente ,de cada termo. Para isso, aplica-se na mesma `removeMult` mas ja não estamos interessados no coefiente faz se `tail`, removendo assim o coeficinte da lista.
 
-        
+```haskell
+parseVar :: String -> (Char, Int)
+parseVar str
+    | pow == [] = (var, 1)
+    | otherwise = (var, read (head pow) :: Int)
+    where
+        var = head str
+        pow = getPower str
+```
+
+Novamente através de uma lista de compreenção, por cada elemento da lista, mais propriamente por cada variável de cada termo, vai-se aplicar a função `parseVar`, que nos vai retornar a lista tuplos pretendida em `parseTerm`, dando uso a funções com `pow`, `head`, e `getPower`, cada tuplo com a variável e o seu respetivo expoente.
  
-        
 
 
 
