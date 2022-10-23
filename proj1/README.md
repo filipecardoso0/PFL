@@ -57,7 +57,7 @@ Uma lista composta por todos os termos(Term) do polinómio.
 
 ### **Main Functions**
 
-#### **parsePolinomio**
+- **parsePolinomio**
 
 No processo de parsing, `parsePolinomio` vai ser a nossa main function, que vai receber um polinómio em `String` e retornar esse mesmo polinómio já no tipo `Polynomial`, chamando várias funções no processo.
 
@@ -70,7 +70,7 @@ parsePolinomio str = [parseTermo x | x<-verifyStrs (addSignals (removeSpaces str
 O polinómio recebido tem de ter cada termo separado por um espaço, e a função `removeSpaces` vai então remover esses espaços e retornar uma lista de strings, sendo os elementos os termos do polinomio e os sinais. Depois através da `addSignals` vai se adicionar o sinal ao respetivo termo. 
 
 
-#### **parseTermo e parseVar**
+- **parseTermo e parseVar**
 
 Pela lista de compreensão em `parsePolinomio`, a função `parseTerm` vai receber cada termo do polinómio em `String` e retornar ja no tipo `Term`.
 
