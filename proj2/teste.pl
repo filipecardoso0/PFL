@@ -404,6 +404,104 @@ replace([_|T], 0, X, [X|T]).
 replace([H|T], I, X, [H|R]):- I > -1, NI is I-1, replace(T, NI, X, R), !.
 replace(L, _, _, L).
 
+% ---------------- Win Conditions ----------------------------
+
+win_condition(Board, CurrPlayer, CapturedStones, Winner) :-
+    % Check for 3-in-a-row patterns in rows and columns
+    (
+        check_3inrow(Board, CurrPlayer, I, J)
+    ;
+        % Check for 3-in-a-row patterns in diagonal
+        check_3inrow(Board, CurrPlayer, I, J)
+    ),
+    winner(CurrPlayer).
+
+win_condition(_, CurrPlayer, CapturedStones, _) :-
+    % Check for 6 captured enemy stones
+    CapturedStones =:= 6,
+    winner(CurrPlayer).
+
+%---------Verify if all elements of List are equal to Value passed-----------------------
+
+all_same([X], X).
+all_same([X|Xs], X) :-
+    all_same(Xs, X).
+
+% ---------Verify if the combination of 3 cells at positions (I,J), (I,J+1), and (I,J+2) on the board is a 3-in-a-row pattern for CurrPlayer.-------------
+
+check_3inrow(Board, CurrPlayer, I, J) :-
+    nth1(I, Board, Row),
+    nth1(J, Row, Cell1),
+    J1 is J+1,
+    nth1(J1, Row, Cell2),
+    J2 is J+2,
+    nth1(J2, Row, Cell3),
+    all_same([Cell1, Cell2, Cell3], CurrPlayer).
+
+%---------Verify if the combination of 3 cells at positions (I,J), (I+1,J), and (I+2,J) on the board is a 3-in-a-row pattern for CurrPlayer.-------------
+
+check_3inrow(Board, CurrPlayer, I, J) :-
+    nth1(I, Board, Row1),
+    nth1(J, Row1, Cell1),
+    I1 is I+1,
+    nth1(I1, Board, Row2),
+    nth1(J, Row2, Cell2),
+    I2 is I+2,
+    nth1(I2, Board, Row3),
+    nth1(J, Row3, Cell3),
+    all_same([Cell1, Cell2, Cell3], CurrPlayer).
+
+
+%---------Verify if the combination of 3 cells at positions (I,J), (I+1,J+1), and (I+2,J+2) on the board is a 3-in-a-row pattern for CurrPlayer-----
+
+check_3inrow(Board, CurrPlayer, I, J) :-
+    nth1(I, Board, Row1),
+    nth1(J, Row1, Cell1),
+    
+    I1 is I+1,
+    nth1(I1, Board, Row2),
+
+    J1 is J+1,
+    nth1(J1, Row2, Cell2),
+
+    I2 is I+2,
+    nth1(I2, Board, Row3),
+
+    J2 is J+2,
+    nth1(J2, Row3, Cell3),
+
+    all_same([Cell1, Cell2, Cell3], CurrPlayer).
+
+%---------Verify if the combination of 3 cells at positions (I,J), (I+1,J-1), and (I+2,J-2) on the board is a 3-in-a-row pattern for CurrPlayer.------
+
+check_3inrow(Board, CurrPlayer, I, J) :-
+    nth1(I, Board, Row1),
+    nth1(J, Row1, Cell1),
+    I1 is I+1,
+    nth1(I1, Board, Row2),
+
+    J1 is J-1,
+    nth1(J1, Row2, Cell2),
+
+    I2 is I+2,
+    nth1(I2, Board, Row3),
+
+    J2 is J-2,
+    nth1(J2, Row3, Cell3),
+
+    all_same([Cell1, Cell2, Cell3], CurrPlayer).
+
+%---------Extracts the first column of Matrix and unifies it with Column, and the rest of the matrix with Rest.------------------------------
+
+first_col([[X|Xs]|Ys], [X|Zs], [Xs|Rs]) :-
+    first_col(Ys, Zs, Rs).
+first_col([], [], []).
+
+winner(1):-
+    write('Player 1 wins!').
+winner(2):-
+    write('Player 2 wins!').
+
 % ------------------- Start Game -----------------------
 
 game:- board([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],Board),
