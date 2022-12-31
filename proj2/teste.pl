@@ -57,18 +57,20 @@ player_turn(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones)
     write('Player 2 Stones '), write(Player2Stones), nl,
     write('Last Played Index: '), write(LastPlayedIndex), nl,
     */
-    if(verify_inserted_nearby_player(CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones), player_turn_jump(Elements, CurrPlayer, Player1Stones, Player2Stones), player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones)).
+    if(verify_inserted_nearby_player(CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones), player_turn_jump(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones), player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones)).
 
 
-player_turn_jump(Elements, CurrPlayer, Player1Stones, Player2Stones):-
+player_turn_jump(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones):-
     write('Player: '), write(CurrPlayer), nl,
     write('Please select an action:'), nl,
     write('1- Jump over an enemy stone.'), nl,
     read(Choice),
     (
-        Choice = 1 -> jump_over_stone(Elements, CurrPlayer, Player1Stones, Player2Stones)
+        Choice = 1 -> jump_over_stone(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones)
     ).
 
+/* TODO ONLY DISPLAY DROP STONE OPTION IF STONE NUMBER < 6*/
+/* TODO ONLY DISPLAY MOVE OPTION IF PLAYER STONE COUNT > 0 */
 player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones):-
     write('Player: '), 
     write(CurrPlayer), nl,
@@ -83,7 +85,70 @@ player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones):-
     ).
 
 % ------------------- Jump Over Enemy Stone -----------------------
-jump_over_stone(Elements, CurrPlayer):- write('Saltar Pedra').
+
+jump_over_stone(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones):-
+/* Saber as pedras que estão próximas daquela que está perto da nossa */ 
+ % In some cases 1 == 1 was added to the end in order to force the , to behave like ;, because for no reason ; was not working 
+   
+    (Up is LastPlayedIndex-4, if(member(Up,Player1Stones), Stone1Index is Up, Stone1Index is -1), 1 == 1),
+    (Down is LastPlayedIndex+4, if(member(Down,Player1Stones), Stone2Index is Down, Stone2Index is -1), 1 == 1),
+    (Right is LastPlayedIndex+1, if(member(Right,Player1Stones), Stone3Index is Right, Stone3Index is -1), 1 == 1),
+    (Left is LastPlayedIndex-1, if(member(Left,Player1Stones), Stone4Index is Left, Stone4Index is -1), 1 == 1),
+    (RightUp is LastPlayedIndex-3, if(member(RightUp,Player1Stones), Stone5Index is RightUp, Stone5Index is -1), 1 == 1),
+    (RightDown is LastPlayedIndex+5, if(member(RightDown,Player1Stones), Stone6Index is RightDown, Stone6Index is -1), 1== 1),
+    (LeftUp is LastPlayedIndex-5, if(member(LeftUp,Player1Stones), Stone7Index is LeftUp, Stone7Index is -1), 1==1),
+    (LeftDown is LastPlayedIndex+3, if(member(LeftDown,Player1Stones), Stone8Index is LeftDown, Stone8Index is -1), 1==1),
+  
+
+    /* Ask the player which stone we wants to move */
+    write('Please select a stone to perform the jump (Row, Col): '), nl,
+
+    output_jump_option_aux(Stone1Index, 1, CurrPlayer), 
+    output_jump_option_aux(Stone2Index, 2, CurrPlayer), 
+    output_jump_option_aux(Stone3Index, 3, CurrPlayer), 
+    output_jump_option_aux(Stone4Index, 4, CurrPlayer), 
+    output_jump_option_aux(Stone5Index, 5, CurrPlayer), 
+    output_jump_option_aux(Stone6Index, 6, CurrPlayer), 
+    output_jump_option_aux(Stone7Index, 7, CurrPlayer), 
+    output_jump_option_aux(Stone8Index, 8, CurrPlayer),
+
+    read(Stone),
+    (
+        Type = 1 -> write('Fodasi'), nl, write('Teste')
+        /* TODO -> IMPLEMENT
+        Type = 2 -> 
+        Type = 4 -> 
+        Type = 5 -> 
+        Type = 6 -> 
+        Type = 7 -> 
+        */
+    ).
+
+
+    /* Verificar se a Posição a seguir está vazia ou tem a pedra de um inimigo */
+
+    /* Atualizar a Posição da Peça */ 
+
+    /* Atualizar o Vetor de Pedras de Ambos os Players */
+
+    /* Retirar a pedra comida do tabuleiro */
+
+    /* Incrementar a contagem de Pedras comidas do Player*/
+
+    /* Finalizar o movement -> Update do estado do tabuleiro */
+
+/* OUTPUTS ROW AND COLUMN OF THE STONES THAT ARE ABLE TO PERFORM A JUMP MOVEMENT */
+output_jump_option_aux(Index, Num, CurrPlayer):-
+
+    /* 1 == 1 is there in order for it to be ignored in case index is negative*/
+    Row is Index // 4, 
+    Column is Index mod 4, 
+
+    if(Index > -1, output_jump_option_final(Index, Num, CurrPlayer, Row, Column), 1==1).
+
+output_jump_option_final(Index, Num, CurrPlayer, Row, Column):-
+    write(Num), write('- '), write('Player('), write(CurrPlayer), write(') -> Stone @ ('), write(Row), write(','), write(Column), write(')'), nl.
+
 
 % ------------------- Move Stone -----------------------
 
@@ -284,7 +349,7 @@ verify_inserted_nearby_player(1, LastInsertedIndex, Player1Stones, Player2Stones
     (Up is LastInsertedIndex-4, member(Up,Player1Stones));
     (Down is LastInsertedIndex+4, member(Down,Player1Stones));
     (Right is LastInsertedIndex+1, member(Right,Player1Stones));
-    (Left is LastInsertedIndex+1, member(Left,Player1Stones));
+    (Left is LastInsertedIndex-1, member(Left,Player1Stones));
     (RightUp is LastInsertedIndex-3, member(RightUp,Player1Stones));
     (RightDown is LastInsertedIndex+5, member(RightDown,Player1Stones));
     (LeftUp is LastInsertedIndex-5, member(LeftUp,Player1Stones));
@@ -294,7 +359,7 @@ verify_inserted_nearby_player(2, LastInsertedIndex, Player1Stones, Player2Stones
     (Up is LastInsertedIndex-4, member(Up,Player2Stones));
     (Down is LastInsertedIndex+4, member(Down,Player2Stones));
     (Right is LastInsertedIndex+1, member(Right,Player2Stones));
-    (Left is LastInsertedIndex+1, member(Left,Player2Stones));
+    (Left is LastInsertedIndex-1, member(Left,Player2Stones));
     (RightUp is LastInsertedIndex-3, member(RightUp,Player2Stones));
     (RightDown is LastInsertedIndex+5, member(RightDown,Player2Stones));
     (LeftUp is LastInsertedIndex-5, member(LeftUp,Player2Stones));
