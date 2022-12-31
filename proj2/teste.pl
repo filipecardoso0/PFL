@@ -57,7 +57,8 @@ player_turn(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones)
     write('Player 2 Stones '), write(Player2Stones), nl,
     write('Last Played Index: '), write(LastPlayedIndex), nl,
     */
-    if(verify_inserted_nearby_player(CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones), player_turn_jump(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones), player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones)).
+    verify_inserted_nearby_player(CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones) -> player_turn_jump(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones) ; 
+                                                                                                player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones).
 
 
 player_turn_jump(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones):-
@@ -90,14 +91,14 @@ jump_over_stone(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Sto
 /* Saber as pedras que estão próximas daquela que está perto da nossa */ 
  % In some cases 1 == 1 was added to the end in order to force the , to behave like ;, because for no reason ; was not working 
    
-    (Up is LastPlayedIndex-4, if(member(Up,Player1Stones), Stone1Index is Up, Stone1Index is -1), 1 == 1),
-    (Down is LastPlayedIndex+4, if(member(Down,Player1Stones), Stone2Index is Down, Stone2Index is -1), 1 == 1),
-    (Right is LastPlayedIndex+1, if(member(Right,Player1Stones), Stone3Index is Right, Stone3Index is -1), 1 == 1),
-    (Left is LastPlayedIndex-1, if(member(Left,Player1Stones), Stone4Index is Left, Stone4Index is -1), 1 == 1),
-    (RightUp is LastPlayedIndex-3, if(member(RightUp,Player1Stones), Stone5Index is RightUp, Stone5Index is -1), 1 == 1),
-    (RightDown is LastPlayedIndex+5, if(member(RightDown,Player1Stones), Stone6Index is RightDown, Stone6Index is -1), 1== 1),
-    (LeftUp is LastPlayedIndex-5, if(member(LeftUp,Player1Stones), Stone7Index is LeftUp, Stone7Index is -1), 1==1),
-    (LeftDown is LastPlayedIndex+3, if(member(LeftDown,Player1Stones), Stone8Index is LeftDown, Stone8Index is -1), 1==1),
+    (Up is LastPlayedIndex-4, member(Up,Player1Stones) -> Stone1Index is Up; Stone1Index is -1),
+    (Down is LastPlayedIndex+4, member(Down,Player1Stones) -> Stone2Index is Down; Stone2Index is -1),
+    (Right is LastPlayedIndex+1, member(Right,Player1Stones) -> Stone3Index is Right; Stone3Index is -1),
+    (Left is LastPlayedIndex-1, member(Left,Player1Stones) -> Stone4Index is Left; Stone4Index is -1),
+    (RightUp is LastPlayedIndex-3, member(RightUp,Player1Stones) -> Stone5Index is RightUp; Stone5Index is -1),
+    (RightDown is LastPlayedIndex+5, member(RightDown,Player1Stones) -> Stone6Index is RightDown; Stone6Index is -1),
+    (LeftUp is LastPlayedIndex-5, member(LeftUp,Player1Stones) -> Stone7Index is LeftUp; Stone7Index is -1),
+    (LeftDown is LastPlayedIndex+3, member(LeftDown,Player1Stones) -> Stone8Index is LeftDown; Stone8Index is -1),
   
 
     /* Ask the player which stone we wants to move */
@@ -144,7 +145,7 @@ output_jump_option_aux(Index, Num, CurrPlayer):-
     Row is Index // 4, 
     Column is Index mod 4, 
 
-    if(Index > -1, output_jump_option_final(Index, Num, CurrPlayer, Row, Column), 1==1).
+    Index > -1 -> output_jump_option_final(Index, Num, CurrPlayer, Row, Column).
 
 output_jump_option_final(Index, Num, CurrPlayer, Row, Column):-
     write(Num), write('- '), write('Player('), write(CurrPlayer), write(') -> Stone @ ('), write(Row), write(','), write(Column), write(')'), nl.
@@ -261,17 +262,17 @@ move_general(Elements, PositionIndex, NewPositionIndex, 1, Player1Stones, Player
 
 move_player(Elements, NewPositionIndex, 1, Player1Stones, Player2Stones):-
     /* Move the stone to its new position */ 
-    replace(Elements, NewPositionIndex, p1, NewElements),
+    replace(Elements, NewPositionIndex, 1, NewElements),
     /* Update Player 1 Stones */ 
-    replace(Player1Stones, NewPositionIndex, p1, NewPlayer1Stones),
+    replace(Player1Stones, NewPositionIndex, 1, NewPlayer1Stones),
 
     finish_player_turn(NewElements, CurrPlayer, NewPositionIndex, NewPlayer1Stones, Player2Stones).
 
 move_player(Elements, NewPositionIndex, 2, Player1Stones, Player2Stones):-
     /* Move the stone to its new position */ 
-    replace(Elements, NewPositionIndex, p2, NewElements),
+    replace(Elements, NewPositionIndex, 2, NewElements),
     /* Update Player 2 Stones */
-    replace(Player2Stones, NewPositionIndex, p1, NewPlayer2Stones),
+    replace(Player2Stones, NewPositionIndex, 1, NewPlayer2Stones),
 
     finish_player_turn(NewElements, CurrPlayer, NewPositionIndex, NewPlayer1Stones, NewPlayer2Stones).
 
@@ -301,7 +302,7 @@ drop_stone_menu(Elements, CurrPlayer, Player1Stones, Player2Stones):-
 /* Drops stone depending on the current player */ 
 drop_stone_currPlayer(Elements, PositionIndex, 1, Player1Stones, Player2Stones):-
     /* Update the board -> Criar um novo tabuleiro */
-   replace(Elements, PositionIndex, p1, NewElements),
+   replace(Elements, PositionIndex, 1, NewElements),
    /* Update Player Stones */ 
    append(Player1Stones, [PositionIndex], NewPlayer1Stones),
 
@@ -309,7 +310,7 @@ drop_stone_currPlayer(Elements, PositionIndex, 1, Player1Stones, Player2Stones):
 
 drop_stone_currPlayer(Elements, PositionIndex, 2, Player1Stones, Player2Stones):-
    /* Update the board -> Criar um novo tabuleiro */
-   replace(Elements, PositionIndex, p2, NewElements),
+   replace(Elements, PositionIndex, 2, NewElements),
    /* Update Player Stones */ 
    append(Player2Stones, [PositionIndex], NewPlayer2Stones),
 
