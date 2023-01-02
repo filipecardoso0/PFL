@@ -45,18 +45,17 @@ write_separator :-
 /* TODO TENTAR COLOCAR AVISOS AO INVES DE EM CASO DE ERRO DETETADO OBRIGAR O JOGADOR A REINCIAR O JOGO */ 
 % ------------------- Player Turn Menu -----------------------
 
-% Jumps are mandatory and take precedence over drops and moves.
 % Multiple jumps, if possible, are required (no max capture rule)
 
 
 % ------------------- Player Turn Menu -----------------------
 
 player_turn(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones):-
-    /* DEBUG INFO
+    /* DEBUG INFO */
     write('Player 1 Stones '), write(Player1Stones), nl,
     write('Player 2 Stones '), write(Player2Stones), nl,
     write('Last Played Index: '), write(LastPlayedIndex), nl,
-    */
+  
     verify_inserted_nearby_player(CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones) -> player_turn_jump(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones) ; 
                                                                                                 player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones).
 
@@ -89,7 +88,6 @@ player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones):-
 
 jump_over_stone(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones):-
 /* Saber as pedras que estão próximas daquela que está perto da nossa */ 
- % In some cases 1 == 1 was added to the end in order to force the , to behave like ;, because for no reason ; was not working 
    
     (Up is LastPlayedIndex-4, member(Up,Player1Stones) -> Stone1Index is Up; Stone1Index is -1),
     (Down is LastPlayedIndex+4, member(Down,Player1Stones) -> Stone2Index is Down; Stone2Index is -1),
@@ -113,43 +111,82 @@ jump_over_stone(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Sto
     output_jump_option_aux(Stone7Index, 7, CurrPlayer), 
     output_jump_option_aux(Stone8Index, 8, CurrPlayer),
 
+
+    Jumpdirection1 is (Stone1Index-LastPlayedIndex)*(-1),
+    Jumpdirection2 is (Stone2Index-LastPlayedIndex)*(-1), 
+    Jumpdirection3 is (Stone3Index-LastPlayedIndex)*(-1),
+    Jumpdirection4 is (Stone4Index-LastPlayedIndex)*(-1), 
+    Jumpdirection5 is (Stone5Index-LastPlayedIndex)*(-1), 
+    Jumpdirection6 is (Stone6Index-LastPlayedIndex)*(-1), 
+    Jumpdirection7 is (Stone7Index-LastPlayedIndex)*(-1), 
+
     read(Stone),
     (
-        Type = 1 -> write('Fodasi'), nl, write('Teste')
-        /* TODO -> IMPLEMENT
-        Type = 2 -> 
-        Type = 4 -> 
-        Type = 5 -> 
-        Type = 6 -> 
-        Type = 7 -> 
-        */
+        Stone = 1 -> make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Jumpdirection1, Stone1Index, LastPlayedIndex); 
+        Stone = 2 -> make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Jumpdirection2, Stone2Index, LastPlayedIndex);
+        Stone = 3 -> make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Jumpdirection3, Stone3Index, LastPlayedIndex);
+        Stone = 4 -> make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Jumpdirection4, Stone4Index, LastPlayedIndex);
+        Stone = 5 -> make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Jumpdirection5, Stone5Index, LastPlayedIndex);
+        Stone = 6 -> make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Jumpdirection6, Stone6Index, LastPlayedIndex);
+        Stone = 7 -> make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Jumpdirection7, Stone7Index, LastPlayedIndex)
     ).
 
-
-    /* Verificar se a Posição a seguir está vazia ou tem a pedra de um inimigo */
-
-    /* Atualizar a Posição da Peça */ 
-
-    /* Atualizar o Vetor de Pedras de Ambos os Players */
-
-    /* Retirar a pedra comida do tabuleiro */
-
-    /* Incrementar a contagem de Pedras comidas do Player*/
-
-    /* Finalizar o movement -> Update do estado do tabuleiro */
-
-/* OUTPUTS ROW AND COLUMN OF THE STONES THAT ARE ABLE TO PERFORM A JUMP MOVEMENT */
 output_jump_option_aux(Index, Num, CurrPlayer):-
 
-    /* 1 == 1 is there in order for it to be ignored in case index is negative*/
     Row is Index // 4, 
     Column is Index mod 4, 
 
-    Index > -1 -> output_jump_option_final(Index, Num, CurrPlayer, Row, Column).
+    if(Index > -1 , output_jump_option_final(Index, Num, CurrPlayer, Row, Column), true).
 
 output_jump_option_final(Index, Num, CurrPlayer, Row, Column):-
     write(Num), write('- '), write('Player('), write(CurrPlayer), write(') -> Stone @ ('), write(Row), write(','), write(Column), write(')'), nl.
 
+make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Jumpdirection, StartPoint, StoneToBeDeleted):-
+
+    Attempt1 is StartPoint+Jumpdirection+Jumpdirection,
+    Attempt2 is Attempt1+Jumpdirection,
+
+    if(is_next_position_valid(Attempt1), true, player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones)), 
+    if(is_next_position_valid(Attempt2), true, player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones)), 
+
+    /* Verificar se a Posição a seguir está ocupada pelo inimigo ou tem uma pedra do player atual */
+    if(occupied_rec(Elements, Attempt1), write('Position occupied! Attempting next position...'), finalize_make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Attempt1, StoneToBeDeleted)),
+    if(occupied_rec(Elements, Attempt2), player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones), finalize_make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Attempt2, StoneToBeDeleted)).
+
+finalize_make_jump(Elements, 1, Player1Stones, Player2Stones, NewStonePosition, StoneToBeDeleted):-
+
+    /* Atualizar a Posição da Peça */ 
+    replace(Elements, NewStonePosition, 1, NewElements),
+
+    /* Retirar a pedra comida do tabuleiro */
+    replace(NewElements, StoneToBeDeleted, 0, FinalElements),
+
+    /* Atualizar o Vetor de Pedras de Ambos os Players */
+    append(Player1Stones, [NewStonePosition], NewPlayer1Stones),
+    delete(StoneToBeDeleted, Player2Stones, NewPlayer2Stones),
+    /* TODO Incrementar a contagem de Pedras comidas do Player*/
+
+    /* Finalizar o movement -> Update do estado do tabuleiro */
+    finish_player_turn(FinalElements, 1, NewStonePosition, NewPlayer1Stones, NewPlayer2Stones).
+
+finalize_make_jump(Elements, 2, Player1Stones, Player2Stones, NewStonePosition, StoneToBeDeleted):-
+
+
+    /* Atualizar a Posição da Peça */ 
+    replace(Elements, NewStonePosition, 2, NewElements),
+
+    /* Retirar a pedra comida do tabuleiro */
+    replace(NewElements, StoneToBeDeleted, 0, FinalElements),
+
+    /* Atualizar o Vetor de Pedras de Ambos os Players */
+    append(Player2Stones, [NewStonePosition], NewPlayer2Stones),
+    delete(StoneToBeDeleted, Player1Stones, NewPlayer1Stones),
+    
+    /* TODO Incrementar a contagem de Pedras comidas do Player*/
+
+
+    /* Finalizar o movement -> Update do estado do tabuleiro */
+    finish_player_turn(FinalElements, 2, NewStonePosition, NewPlayer1Stones, NewPlayer2Stones).
 
 % ------------------- Move Stone -----------------------
 
@@ -384,13 +421,19 @@ verify_adjacent(PositionIndex, NewPositionIndex) :-
 % ------------------- Verify if next position is valid (is not out of bounds) -----------------------
 is_next_position_valid(PositionIndex):- PositionIndex < 16, PositionIndex > -1.
 
-
 % ------------------- Verify if position is in bounds -----------------------
 in_bounds_position(Row, Col):- 
     Row < 5, 
     Col < 5, 
     Row > 0, 
     Col > 0.
+
+% ---------------- Verify if the given position is already taken ----------------------------
+occupied(p1).
+occupied(p2).
+
+occupied_rec([H|T], 0) :- occupied(H).
+occupied_rec([H|T], Index) :- Index > -1,  I1 is Index-1, occupied_rec(T, I1).
 
 % ---------------- Verify if the given position is already taken ----------------------------
 not_taken(0).
@@ -404,6 +447,10 @@ not_taken_rec([H|T], Index) :- Index > -1,  I1 is Index-1, not_taken_rec(T, I1).
 replace([_|T], 0, X, [X|T]).
 replace([H|T], I, X, [H|R]):- I > -1, NI is I-1, replace(T, NI, X, R), !.
 replace(L, _, _, L).
+
+% ---------------- Remove an element from the list ----------------------------
+delete(X, [X|Tail], Tail).
+delete(X, [Y|Tail], [Y|Tail1]) :- delete(X, Tail, Tail1).
 
 % ---------------- Win Conditions ----------------------------
 
