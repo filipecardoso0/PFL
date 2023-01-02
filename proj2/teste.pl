@@ -86,7 +86,53 @@ player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones):-
 
 % ------------------- Jump Over Enemy Stone -----------------------
 
-jump_over_stone(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones):-
+jump_over_stone(Elements, 2, LastPlayedIndex, Player1Stones, Player2Stones):-
+/* Saber as pedras que estão próximas daquela que está perto da nossa */ 
+   
+    (Up is LastPlayedIndex-4, member(Up,Player2Stones) -> Stone1Index is Up; Stone1Index is -1),
+    (Down is LastPlayedIndex+4, member(Down,Player2Stones) -> Stone2Index is Down; Stone2Index is -1),
+    (Right is LastPlayedIndex+1, member(Right,Player2Stones) -> Stone3Index is Right; Stone3Index is -1),
+    (Left is LastPlayedIndex-1, member(Left,Player2Stones) -> Stone4Index is Left; Stone4Index is -1),
+    (RightUp is LastPlayedIndex-3, member(RightUp,Player2Stones) -> Stone5Index is RightUp; Stone5Index is -1),
+    (RightDown is LastPlayedIndex+5, member(RightDown,Player2Stones) -> Stone6Index is RightDown; Stone6Index is -1),
+    (LeftUp is LastPlayedIndex-5, member(LeftUp,Player2Stones) -> Stone7Index is LeftUp; Stone7Index is -1),
+    (LeftDown is LastPlayedIndex+3, member(LeftDown,Player2Stones) -> Stone8Index is LeftDown; Stone8Index is -1),
+  
+
+    /* Ask the player which stone we wants to move */
+    write('Please select a stone to perform the jump (Row, Col): '), nl,
+
+    output_jump_option_aux(Stone1Index, 1, 2), 
+    output_jump_option_aux(Stone2Index, 2, 2), 
+    output_jump_option_aux(Stone3Index, 3, 2), 
+    output_jump_option_aux(Stone4Index, 4, 2), 
+    output_jump_option_aux(Stone5Index, 5, 2), 
+    output_jump_option_aux(Stone6Index, 6, 2), 
+    output_jump_option_aux(Stone7Index, 7, 2), 
+    output_jump_option_aux(Stone8Index, 8, 2),
+
+
+    Jumpdirection1 is (Stone1Index-LastPlayedIndex)*(-1),
+    Jumpdirection2 is (Stone2Index-LastPlayedIndex)*(-1), 
+    Jumpdirection3 is (Stone3Index-LastPlayedIndex)*(-1),
+    Jumpdirection4 is (Stone4Index-LastPlayedIndex)*(-1), 
+    Jumpdirection5 is (Stone5Index-LastPlayedIndex)*(-1), 
+    Jumpdirection6 is (Stone6Index-LastPlayedIndex)*(-1), 
+    Jumpdirection7 is (Stone7Index-LastPlayedIndex)*(-1), 
+
+    read(Stone),
+    (
+        Stone = 1 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection1, Stone1Index, LastPlayedIndex); 
+        Stone = 2 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection2, Stone2Index, LastPlayedIndex);
+        Stone = 3 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection3, Stone3Index, LastPlayedIndex);
+        Stone = 4 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection4, Stone4Index, LastPlayedIndex);
+        Stone = 5 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection5, Stone5Index, LastPlayedIndex);
+        Stone = 6 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection6, Stone6Index, LastPlayedIndex);
+        Stone = 7 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection7, Stone7Index, LastPlayedIndex)
+    ).
+
+
+jump_over_stone(Elements, 1, LastPlayedIndex, Player1Stones, Player2Stones):-
 /* Saber as pedras que estão próximas daquela que está perto da nossa */ 
    
     (Up is LastPlayedIndex-4, member(Up,Player1Stones) -> Stone1Index is Up; Stone1Index is -1),
@@ -102,14 +148,14 @@ jump_over_stone(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Sto
     /* Ask the player which stone we wants to move */
     write('Please select a stone to perform the jump (Row, Col): '), nl,
 
-    output_jump_option_aux(Stone1Index, 1, CurrPlayer), 
-    output_jump_option_aux(Stone2Index, 2, CurrPlayer), 
-    output_jump_option_aux(Stone3Index, 3, CurrPlayer), 
-    output_jump_option_aux(Stone4Index, 4, CurrPlayer), 
-    output_jump_option_aux(Stone5Index, 5, CurrPlayer), 
-    output_jump_option_aux(Stone6Index, 6, CurrPlayer), 
-    output_jump_option_aux(Stone7Index, 7, CurrPlayer), 
-    output_jump_option_aux(Stone8Index, 8, CurrPlayer),
+    output_jump_option_aux(Stone1Index, 1, 1), 
+    output_jump_option_aux(Stone2Index, 2, 1), 
+    output_jump_option_aux(Stone3Index, 3, 1), 
+    output_jump_option_aux(Stone4Index, 4, 1), 
+    output_jump_option_aux(Stone5Index, 5, 1), 
+    output_jump_option_aux(Stone6Index, 6, 1), 
+    output_jump_option_aux(Stone7Index, 7, 1), 
+    output_jump_option_aux(Stone8Index, 8, 1),
 
 
     Jumpdirection1 is (Stone1Index-LastPlayedIndex)*(-1),
@@ -122,13 +168,13 @@ jump_over_stone(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Sto
 
     read(Stone),
     (
-        Stone = 1 -> make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Jumpdirection1, Stone1Index, LastPlayedIndex); 
-        Stone = 2 -> make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Jumpdirection2, Stone2Index, LastPlayedIndex);
-        Stone = 3 -> make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Jumpdirection3, Stone3Index, LastPlayedIndex);
-        Stone = 4 -> make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Jumpdirection4, Stone4Index, LastPlayedIndex);
-        Stone = 5 -> make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Jumpdirection5, Stone5Index, LastPlayedIndex);
-        Stone = 6 -> make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Jumpdirection6, Stone6Index, LastPlayedIndex);
-        Stone = 7 -> make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Jumpdirection7, Stone7Index, LastPlayedIndex)
+        Stone = 1 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection1, Stone1Index, LastPlayedIndex); 
+        Stone = 2 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection2, Stone2Index, LastPlayedIndex);
+        Stone = 3 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection3, Stone3Index, LastPlayedIndex);
+        Stone = 4 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection4, Stone4Index, LastPlayedIndex);
+        Stone = 5 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection5, Stone5Index, LastPlayedIndex);
+        Stone = 6 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection6, Stone6Index, LastPlayedIndex);
+        Stone = 7 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection7, Stone7Index, LastPlayedIndex)
     ).
 
 output_jump_option_aux(Index, Num, CurrPlayer):-
@@ -150,52 +196,57 @@ make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Jumpdirection, Sta
     if(is_next_position_valid(Attempt2), true, player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones)), 
 
     /* Verificar se a Posição a seguir está ocupada pelo inimigo ou tem uma pedra do player atual */
-    if(occupied_rec(Elements, Attempt1), write('Position occupied! Attempting next position...'), finalize_make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Attempt1, StoneToBeDeleted)),
-    if(occupied_rec(Elements, Attempt2), player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones), finalize_make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Attempt2, StoneToBeDeleted)).
+    if(occupied_rec(Elements, Attempt1), write('Position occupied! Attempting next position...'), finalize_make_jump(Elements, CurrPlayer, StartPoint, Player1Stones, Player2Stones, Attempt1, StoneToBeDeleted)),
+    if(occupied_rec(Elements, Attempt2), player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones), finalize_make_jump(Elements, CurrPlayer, StartPoint, Player1Stones, Player2Stones, Attempt2, StoneToBeDeleted)).
 
-finalize_make_jump(Elements, 1, Player1Stones, Player2Stones, NewStonePosition, StoneToBeDeleted):-
+finalize_make_jump(Elements, 1, StartPoint, Player1Stones, Player2Stones, NewStonePosition, StoneToBeDeleted):-
 
     /* Atualizar a Posição da Peça */ 
-    replace(Elements, NewStonePosition, 1, NewElements),
+    replace(Elements, StartPoint, 0, NewElements),
+    replace(NewElements, NewStonePosition, 1, UpdatedElements),
 
     /* Retirar a pedra comida do tabuleiro */
-    replace(NewElements, StoneToBeDeleted, 0, FinalElements),
+    replace(UpdatedElements, StoneToBeDeleted, 0, FinalElements),
 
     /* Atualizar o Vetor de Pedras de Ambos os Players */
     append(Player1Stones, [NewStonePosition], NewPlayer1Stones),
+    delete(StartPoint, NewPlayer1Stones, FinalPlayer1Stones),
     delete(StoneToBeDeleted, Player2Stones, NewPlayer2Stones),
     /* TODO Incrementar a contagem de Pedras comidas do Player*/
 
     /* Finalizar o movement -> Update do estado do tabuleiro */
-    finish_player_turn(FinalElements, 1, NewStonePosition, NewPlayer1Stones, NewPlayer2Stones).
+    finish_player_turn(FinalElements, 1, NewStonePosition, FinalPlayer1Stones, NewPlayer2Stones).
 
-finalize_make_jump(Elements, 2, Player1Stones, Player2Stones, NewStonePosition, StoneToBeDeleted):-
+
+finalize_make_jump(Elements, 2, StartPoint, Player1Stones, Player2Stones, NewStonePosition, StoneToBeDeleted):-
 
 
     /* Atualizar a Posição da Peça */ 
-    replace(Elements, NewStonePosition, 2, NewElements),
+    replace(Elements, StartPoint, 0, NewElements),
+    replace(NewElements, NewStonePosition, 2, UpdatedElements),
 
     /* Retirar a pedra comida do tabuleiro */
-    replace(NewElements, StoneToBeDeleted, 0, FinalElements),
+    replace(UpdatedElements, StoneToBeDeleted, 0, FinalElements),
 
     /* Atualizar o Vetor de Pedras de Ambos os Players */
     append(Player2Stones, [NewStonePosition], NewPlayer2Stones),
+    delete(StartPoint, NewPlayer2Stones, FinalPlayer2Stones),
     delete(StoneToBeDeleted, Player1Stones, NewPlayer1Stones),
     
     /* TODO Incrementar a contagem de Pedras comidas do Player*/
 
-
     /* Finalizar o movement -> Update do estado do tabuleiro */
-    finish_player_turn(FinalElements, 2, NewStonePosition, NewPlayer1Stones, NewPlayer2Stones).
+    finish_player_turn(FinalElements, 2, NewStonePosition, NewPlayer1Stones, FinalPlayer2Stones).
+
 
 % ------------------- Move Stone -----------------------
 
 move_stone(Elements, CurrPlayer, Player1Stones, Player2Stones):-
     write('Select which Stone do you want to move:'), nl, 
-    write('Select the column where the stone is located (1-4):'), nl, 
-    read(Col), 
-    write('Select the row where the stone is located (1-4): '), nl, 
+    write('Select the row where the stone is located (1-4):'), nl, 
     read(Row), 
+    write('Select the col where the stone is located (1-4): '), nl, 
+    read(Col), 
 
    /* Position index of the stone we are going to move*/
    Position is (Row-1)*4+Col,
@@ -230,8 +281,8 @@ show_options_orthogonal(Elements, PositionIndex, CurrPlayer, Player1Stones, Play
    (
         Type = 1 -> move_orthogonal(Elements, PositionIndex, 1, CurrPlayer, Player1Stones, Player2Stones); 
         Type = 2 -> move_orthogonal(Elements, PositionIndex, -1, CurrPlayer, Player1Stones, Player2Stones); 
-        Type = 3 -> move_orthogonal(Elements, PositionIndex, 4, CurrPlayer, Player1Stones, Player2Stones); 
-        Type = 4 -> move_orthogonal(Elements, PositionIndex, -4, CurrPlayer, Player1Stones, Player2Stones)
+        Type = 3 -> move_orthogonal(Elements, PositionIndex, -4, CurrPlayer, Player1Stones, Player2Stones); 
+        Type = 4 -> move_orthogonal(Elements, PositionIndex, 4, CurrPlayer, Player1Stones, Player2Stones)
    ). 
 
 
@@ -262,7 +313,7 @@ move_orthogonal(Elements, PositionIndex, Accomulator, CurrPlayer, Player1Stones,
     NewPositionIndex is PositionIndex+Accomulator,
 
     /* Verify if the New Position is Adjacent to the Previous position */
-    verify_adjacent(PositionIndex, NewPositionIndex),
+    verify_teste(PositionIndex, NewPositionIndex),
 
     move_general(Elements, PositionIndex, NewPositionIndex, CurrPlayer, Player1Stones, Player2Stones).
 
@@ -275,14 +326,20 @@ move_general(Elements, PositionIndex, NewPositionIndex, 1, Player1Stones, Player
     /* Verify if the position where we are going to go next is taken */ 
     not_taken_rec(Elements, NewPositionIndex), 
 
-    /* Remove the stone from the current position */ 
+    /* Remove the stone from the current position -> Update Board */ 
     replace(Elements,PositionIndex,0,NewElements),
-    /* Update Player Stones */ 
-    replace(Player1Stones, PositionIndex, 0, NewPlayer1Stones),
 
-    move_player(NewElements, NewPositionIndex, CurrPlayer, NewPlayer1Stones, Player2Stones).
+    /* Move the stone to its new position -> Update Board */ 
+    replace(NewElements, NewPositionIndex, 1, FinalElements),
 
-move_general(Elements, PositionIndex, NewPositionIndex, 1, Player1Stones, Player2Stones):-
+    /* Update Player 1 Stones */ 
+    append(Player1Stones, [NewPositionIndex], NewPlayer1Stones),
+    delete(PositionIndex, NewPlayer1Stones, FinalPlayer1Stones),
+
+    finish_player_turn(FinalElements, 1, NewPositionIndex, FinalPlayer1Stones, Player2Stones).
+
+
+move_general(Elements, PositionIndex, NewPositionIndex, 2, Player1Stones, Player2Stones):-
 
     /* Verify if the next position index is valid */
     is_next_position_valid(NewPositionIndex), 
@@ -290,28 +347,17 @@ move_general(Elements, PositionIndex, NewPositionIndex, 1, Player1Stones, Player
     /* Verify if the position where we are going to go next is taken */ 
     not_taken_rec(Elements, NewPositionIndex), 
 
-    /* Remove the stone from the current position */ 
+    /* Remove the stone from the current position -> Update Board */ 
     replace(Elements,PositionIndex,0,NewElements),
-    /* Update Player Stones */ 
-    replace(Player2Stones, PositionIndex, 0, NewPlayer2Stones),
 
-    move_player(NewElements, NewPositionIndex, CurrPlayer, Player1Stones, NewPlayer2Stones).
+    /* Move the stone to its new position -> Update Board */ 
+    replace(NewElements, NewPositionIndex, 2, FinalElements),
 
-move_player(Elements, NewPositionIndex, 1, Player1Stones, Player2Stones):-
-    /* Move the stone to its new position */ 
-    replace(Elements, NewPositionIndex, 1, NewElements),
-    /* Update Player 1 Stones */ 
-    replace(Player1Stones, NewPositionIndex, 1, NewPlayer1Stones),
+    /* Update Player 2 Stones */ 
+    append(Player2Stones, [NewPositionIndex], NewPlayer2Stones),
+    delete(PositionIndex, NewPlayer2Stones, FinalPlayer2Stones),
 
-    finish_player_turn(NewElements, CurrPlayer, NewPositionIndex, NewPlayer1Stones, Player2Stones).
-
-move_player(Elements, NewPositionIndex, 2, Player1Stones, Player2Stones):-
-    /* Move the stone to its new position */ 
-    replace(Elements, NewPositionIndex, 2, NewElements),
-    /* Update Player 2 Stones */
-    replace(Player2Stones, NewPositionIndex, 1, NewPlayer2Stones),
-
-    finish_player_turn(NewElements, CurrPlayer, NewPositionIndex, NewPlayer1Stones, NewPlayer2Stones).
+    finish_player_turn(FinalElements, 2, NewPositionIndex, Player1Stones, FinalPlayer2Stones).
 
 
 drop_stone_menu(Elements, CurrPlayer, Player1Stones, Player2Stones):-
@@ -411,12 +457,37 @@ can_move_diagonally(PositionIndex, Accomulator):-
 
 
 % ------------------- Verify if next position is adjacent  -----------------------
+/*
 verify_adjacent(PositionIndex, NewPositionIndex) :-
+    PositionIndex = 3 -> Adjacents_boarders(PositionIndex,NPositionIndex);
+
+    NewPositionIndex is PositionIndex + 1;
+    NewPositionIndex is PositionIndex + 3;
+    NewPositionIndex is PositionIndex + 4;
+    NewPositionIndex is PositionIndex + 5;
+    NewPositionIndex is PositionIndex - 1;
+    NewPositionIndex is PositionIndex - 3;
+    NewPositionIndex is PositionIndex - 4.
+*/
+ 
+/*
     (NewPositionIndex < 4 , NewPositionIndex > -1 , PositionIndex < 4, PositionIndex > -1); 
     (NewPositionIndex < 8, NewPositionIndex > 3, PositionIndex < 8, PositionIndex > 3); 
     (NewPositionIndex < 12, NewPositionIndex > 7, PositionIndex < 12, PositionIndex > 7); 
-    (NewPositionIndex < 16, NewPositionIndex > 11, PositionIndex < 16, PositionIndex > 11).
+    (NewPositionIndex < 16, NewPositionIndex > 11, PositionIndex < 16, PositionIndex > 11);
+    ((NewPositionIndex - PositionIndex) > 3, (NewPositionIndex - PositionIndex) < 5); 
+    ((NewPositionIndex - PositionIndex))
+  
+ */
 
+ verify_teste(PositionIndex, NewPositionIndex) :- 
+    (NewPositionIndex < 4 , NewPositionIndex > -1 , PositionIndex < 4, PositionIndex > -1); 
+    (NewPositionIndex < 8, NewPositionIndex > 3, PositionIndex < 8, PositionIndex > 3); 
+    (NewPositionIndex < 12, NewPositionIndex > 7, PositionIndex < 12, PositionIndex > 7); 
+    (NewPositionIndex < 16, NewPositionIndex > 11, PositionIndex < 16, PositionIndex > 11);
+    ((NewPositionIndex - PositionIndex) > 3, (NewPositionIndex - PositionIndex) < 5); 
+    ((PositionIndex - NewPositionIndex) > 3, (PositionIndex - NewPositionIndex) < 5).
+    
 
 % ------------------- Verify if next position is valid (is not out of bounds) -----------------------
 is_next_position_valid(PositionIndex):- PositionIndex < 16, PositionIndex > -1.
