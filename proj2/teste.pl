@@ -1,3 +1,6 @@
+?- use_module(library(lists)).
+?- use_module(library(system)).
+
 % -------------------Construct Board -----------------------
 
 board(Elements, Board) :-
@@ -45,33 +48,87 @@ write_separator :-
 /* TODO TENTAR COLOCAR AVISOS AO INVES DE EM CASO DE ERRO DETETADO OBRIGAR O JOGADOR A REINCIAR O JOGO */ 
 % ------------------- Player Turn Menu -----------------------
 
-% Multiple jumps, if possible, are required (no max capture rule)
-
 
 % ------------------- Player Turn Menu -----------------------
 
-player_turn(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones):-
+player_turn(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
     /* DEBUG INFO */
     write('Player 1 Stones '), write(Player1Stones), nl,
     write('Player 2 Stones '), write(Player2Stones), nl,
+    write('Player 1 Captured Stones '), write(CapturedStones1), nl,
+    write('Player 2 Captured Stones '), write(CapturedStones2), nl,
+    write('Player 1 Deployed Stones '), write(Stone1Num), nl, 
+    write('Player 2 Deployed Stones '), write(Stone2Num), nl, 
     write('Last Played Index: '), write(LastPlayedIndex), nl,
   
-    verify_inserted_nearby_player(CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones) -> player_turn_jump(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones) ; 
-                                                                                                player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones).
+    verify_inserted_nearby_player(CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones) -> player_turn_jump(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num) ; 
+                                                                                                player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num).                                                                                   
 
 
-player_turn_jump(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones):-
+player_turn_jump(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
     write('Player: '), write(CurrPlayer), nl,
     write('Please select an action:'), nl,
     write('1- Jump over an enemy stone.'), nl,
     read(Choice),
     (
-        Choice = 1 -> jump_over_stone(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones)
+        Choice = 1 -> jump_over_stone(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num)
+    ).
+ 
+% ----------------- DONT DISPLAY MOVE ACTION IF USER HAS NOT ANY STONE ON THE ARENA ----------------- 
+
+player_turn_DropOrMove(Elements, 1, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, 8, Stone2Num):-
+
+    write('Player: '), 
+    write(1), nl,
+    write('Please select an action:'), nl,
+    write('1- Drop a stone into an empty cell.'), nl,
+
+    read(Choice),
+    (
+        Choice = 1 -> drop_stone_menu(Elements, 1, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, 8, Stone2Num)
     ).
 
-/* TODO ONLY DISPLAY DROP STONE OPTION IF STONE NUMBER < 6*/
-/* TODO ONLY DISPLAY MOVE OPTION IF PLAYER STONE COUNT > 0 */
-player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones):-
+player_turn_DropOrMove(Elements, 2, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, 8):-
+
+    write('Player: '), 
+    write(2), nl,
+    write('Please select an action:'), nl,
+    write('1- Drop a stone into an empty cell.'), nl,
+
+    read(Choice),
+    (
+        Choice = 1 -> drop_stone_menu(Elements, 2, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, 8)
+    ).
+
+% ----------------- DONT DISPLAY DROP A STONE ACTION IF USER HAS ALREADY DEPLOYED ALL HIS STONES ----------------- 
+
+player_turn_DropOrMove(Elements, 1, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, 0):-
+
+    write('Player: '), 
+    write(1), nl,
+    write('Please select an action:'), nl,
+    write('1- Move a stone into an adjacent(orthogonal or diagonal empty cell.'), nl,
+
+    read(Choice),
+    (
+        Choice = 1 -> move_stone(Elements, 1, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, 0)
+    ).
+
+player_turn_DropOrMove(Elements, 2, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, 0):-
+
+    write('Player: '), 
+    write(2), nl,
+    write('Please select an action:'), nl,
+    write('1- Move a stone into an adjacent(orthogonal or diagonal empty cell.'), nl,
+
+    read(Choice),
+    (
+        Choice = 1 -> move_stone(Elements, 2, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, 0)
+    ).
+
+% ----------------- DROP OR MOVE DEFAULT DISPLAY MENU ----------------- 
+
+player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
     write('Player: '), 
     write(CurrPlayer), nl,
     write('Please select an action:'), nl,
@@ -80,13 +137,13 @@ player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones):-
 
     read(Choice),
     (
-        Choice = 1 -> drop_stone_menu(Elements, CurrPlayer, Player1Stones, Player2Stones); 
-        Choice = 2 -> move_stone(Elements, CurrPlayer, Player1Stones, Player2Stones)
+        Choice = 1 -> drop_stone_menu(Elements, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num); 
+        Choice = 2 -> move_stone(Elements, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num)
     ).
 
 % ------------------- Jump Over Enemy Stone -----------------------
 
-jump_over_stone(Elements, 2, LastPlayedIndex, Player1Stones, Player2Stones):-
+jump_over_stone(Elements, 2, LastPlayedIndex, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
 /* Saber as pedras que estão próximas daquela que está perto da nossa */ 
    
     (Up is LastPlayedIndex-4, member(Up,Player2Stones) -> Stone1Index is Up; Stone1Index is -1),
@@ -122,17 +179,17 @@ jump_over_stone(Elements, 2, LastPlayedIndex, Player1Stones, Player2Stones):-
 
     read(Stone),
     (
-        Stone = 1 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection1, Stone1Index, LastPlayedIndex); 
-        Stone = 2 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection2, Stone2Index, LastPlayedIndex);
-        Stone = 3 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection3, Stone3Index, LastPlayedIndex);
-        Stone = 4 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection4, Stone4Index, LastPlayedIndex);
-        Stone = 5 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection5, Stone5Index, LastPlayedIndex);
-        Stone = 6 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection6, Stone6Index, LastPlayedIndex);
-        Stone = 7 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection7, Stone7Index, LastPlayedIndex)
+        Stone = 1 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection1, Stone1Index, LastPlayedIndex, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num); 
+        Stone = 2 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection2, Stone2Index, LastPlayedIndex, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num);
+        Stone = 3 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection3, Stone3Index, LastPlayedIndex, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num);
+        Stone = 4 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection4, Stone4Index, LastPlayedIndex, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num);
+        Stone = 5 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection5, Stone5Index, LastPlayedIndex, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num);
+        Stone = 6 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection6, Stone6Index, LastPlayedIndex, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num);
+        Stone = 7 -> make_jump(Elements, 2, Player1Stones, Player2Stones, Jumpdirection7, Stone7Index, LastPlayedIndex, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num)
     ).
 
 
-jump_over_stone(Elements, 1, LastPlayedIndex, Player1Stones, Player2Stones):-
+jump_over_stone(Elements, 1, LastPlayedIndex, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
 /* Saber as pedras que estão próximas daquela que está perto da nossa */ 
    
     (Up is LastPlayedIndex-4, member(Up,Player1Stones) -> Stone1Index is Up; Stone1Index is -1),
@@ -168,13 +225,13 @@ jump_over_stone(Elements, 1, LastPlayedIndex, Player1Stones, Player2Stones):-
 
     read(Stone),
     (
-        Stone = 1 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection1, Stone1Index, LastPlayedIndex); 
-        Stone = 2 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection2, Stone2Index, LastPlayedIndex);
-        Stone = 3 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection3, Stone3Index, LastPlayedIndex);
-        Stone = 4 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection4, Stone4Index, LastPlayedIndex);
-        Stone = 5 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection5, Stone5Index, LastPlayedIndex);
-        Stone = 6 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection6, Stone6Index, LastPlayedIndex);
-        Stone = 7 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection7, Stone7Index, LastPlayedIndex)
+        Stone = 1 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection1, Stone1Index, LastPlayedIndex, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num); 
+        Stone = 2 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection2, Stone2Index, LastPlayedIndex, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num);
+        Stone = 3 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection3, Stone3Index, LastPlayedIndex, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num);
+        Stone = 4 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection4, Stone4Index, LastPlayedIndex, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num);
+        Stone = 5 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection5, Stone5Index, LastPlayedIndex, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num);
+        Stone = 6 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection6, Stone6Index, LastPlayedIndex, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num);
+        Stone = 7 -> make_jump(Elements, 1, Player1Stones, Player2Stones, Jumpdirection7, Stone7Index, LastPlayedIndex, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num)
     ).
 
 output_jump_option_aux(Index, Num, CurrPlayer):-
@@ -187,19 +244,19 @@ output_jump_option_aux(Index, Num, CurrPlayer):-
 output_jump_option_final(Index, Num, CurrPlayer, Row, Column):-
     write(Num), write('- '), write('Player('), write(CurrPlayer), write(') -> Stone @ ('), write(Row), write(','), write(Column), write(')'), nl.
 
-make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Jumpdirection, StartPoint, StoneToBeDeleted):-
+make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Jumpdirection, StartPoint, StoneToBeDeleted, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
 
     Attempt1 is StartPoint+Jumpdirection+Jumpdirection,
     Attempt2 is Attempt1+Jumpdirection,
 
-    if(is_next_position_valid(Attempt1), true, player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones)), 
-    if(is_next_position_valid(Attempt2), true, player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones)), 
+    if(is_next_position_valid(Attempt1), true, player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num)), 
+    if(is_next_position_valid(Attempt2), true, player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num)), 
 
     /* Verificar se a Posição a seguir está ocupada pelo inimigo ou tem uma pedra do player atual */
-    if(occupied_rec(Elements, Attempt1), write('Position occupied! Attempting next position...'), finalize_make_jump(Elements, CurrPlayer, StartPoint, Player1Stones, Player2Stones, Attempt1, StoneToBeDeleted)),
-    if(occupied_rec(Elements, Attempt2), player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones), finalize_make_jump(Elements, CurrPlayer, StartPoint, Player1Stones, Player2Stones, Attempt2, StoneToBeDeleted)).
+    if(occupied_rec(Elements, Attempt1), write('Position occupied! Attempting next position...'), finalize_make_jump(Elements, CurrPlayer, StartPoint, Player1Stones, Player2Stones, Attempt1, StoneToBeDeleted, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num)),
+    if(occupied_rec(Elements, Attempt2), player_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones), finalize_make_jump(Elements, CurrPlayer, StartPoint, Player1Stones, Player2Stones, Attempt2, StoneToBeDeleted, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num)).
 
-finalize_make_jump(Elements, 1, StartPoint, Player1Stones, Player2Stones, NewStonePosition, StoneToBeDeleted):-
+finalize_make_jump(Elements, 1, StartPoint, Player1Stones, Player2Stones, NewStonePosition, StoneToBeDeleted, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
 
     /* Atualizar a Posição da Peça */ 
     replace(Elements, StartPoint, 0, NewElements),
@@ -213,12 +270,13 @@ finalize_make_jump(Elements, 1, StartPoint, Player1Stones, Player2Stones, NewSto
     delete(StartPoint, NewPlayer1Stones, FinalPlayer1Stones),
     delete(StoneToBeDeleted, Player2Stones, NewPlayer2Stones),
     /* TODO Incrementar a contagem de Pedras comidas do Player*/
+    NewCapturedStones1 is CapturedStones1 + 1,
 
     /* Finalizar o movement -> Update do estado do tabuleiro */
-    finish_player_turn(FinalElements, 1, NewStonePosition, FinalPlayer1Stones, NewPlayer2Stones).
+    finish_player_turn(FinalElements, 1, NewStonePosition, FinalPlayer1Stones, NewPlayer2Stones, NewCapturedStones1, CapturedStones2, Stone1Num, Stone2Num).
 
 
-finalize_make_jump(Elements, 2, StartPoint, Player1Stones, Player2Stones, NewStonePosition, StoneToBeDeleted):-
+finalize_make_jump(Elements, 2, StartPoint, Player1Stones, Player2Stones, NewStonePosition, StoneToBeDeleted, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
 
 
     /* Atualizar a Posição da Peça */ 
@@ -234,14 +292,15 @@ finalize_make_jump(Elements, 2, StartPoint, Player1Stones, Player2Stones, NewSto
     delete(StoneToBeDeleted, Player1Stones, NewPlayer1Stones),
     
     /* TODO Incrementar a contagem de Pedras comidas do Player*/
+    NewCapturedStones2 is CapturedStones2 + 1,
 
     /* Finalizar o movement -> Update do estado do tabuleiro */
-    finish_player_turn(FinalElements, 2, NewStonePosition, NewPlayer1Stones, FinalPlayer2Stones).
+    finish_player_turn(FinalElements, 2, NewStonePosition, NewPlayer1Stones, FinalPlayer2Stones, CapturedStones1, NewCapturedStones2, Stone1Num, Stone2Num).
 
 
 % ------------------- Move Stone -----------------------
 
-move_stone(Elements, CurrPlayer, Player1Stones, Player2Stones):-
+move_stone(Elements, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
     write('Select which Stone do you want to move:'), nl, 
     write('Select the row where the stone is located (1-4):'), nl, 
     read(Row), 
@@ -257,21 +316,21 @@ move_stone(Elements, CurrPlayer, Player1Stones, Player2Stones):-
     */
 
    /* Select the movement type */ 
-   movement_selector(Elements, PositionIndex, CurrPlayer, Player1Stones, Player2Stones).
+   movement_selector(Elements, PositionIndex, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num).
 
 /* Move a stone into an adjacent(orthogonal or diagonal empty cell */
-movement_selector(Elements, PositionIndex, CurrPlayer, Player1Stones, Player2Stones):-
+movement_selector(Elements, PositionIndex, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
     write('Please Select the movement Type: '), nl,
     write('1- Orthogonal'), nl, 
     write('2- Diagonal'), nl, 
     read(Type),
     (
-        Type = 1 -> show_options_orthogonal(Elements, PositionIndex, CurrPlayer, Player1Stones, Player2Stones); 
-        Type = 2 -> show_options_diagonal(Elements, PositionIndex, CurrPlayer, Player1Stones, Player2Stones)
+        Type = 1 -> show_options_orthogonal(Elements, PositionIndex, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num); 
+        Type = 2 -> show_options_diagonal(Elements, PositionIndex, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num)
     ).
 
 /* Move a stone orthogonally */
-show_options_orthogonal(Elements, PositionIndex, CurrPlayer, Player1Stones, Player2Stones):-
+show_options_orthogonal(Elements, PositionIndex, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
    write('Please select the direction of the movement'), nl, 
    write('1- Right'), nl, 
    write('2- Left'), nl, 
@@ -279,15 +338,15 @@ show_options_orthogonal(Elements, PositionIndex, CurrPlayer, Player1Stones, Play
    write('4- Down'), nl, 
    read(Type), 
    (
-        Type = 1 -> move_orthogonal(Elements, PositionIndex, 1, CurrPlayer, Player1Stones, Player2Stones); 
-        Type = 2 -> move_orthogonal(Elements, PositionIndex, -1, CurrPlayer, Player1Stones, Player2Stones); 
-        Type = 3 -> move_orthogonal(Elements, PositionIndex, -4, CurrPlayer, Player1Stones, Player2Stones); 
-        Type = 4 -> move_orthogonal(Elements, PositionIndex, 4, CurrPlayer, Player1Stones, Player2Stones)
+        Type = 1 -> move_orthogonal(Elements, PositionIndex, 1, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num); 
+        Type = 2 -> move_orthogonal(Elements, PositionIndex, -1, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num); 
+        Type = 3 -> move_orthogonal(Elements, PositionIndex, -4, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num); 
+        Type = 4 -> move_orthogonal(Elements, PositionIndex, 4, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num)
    ). 
 
 
 /* Move a stone diagonally */
-show_options_diagonal(Elements, PositionIndex, CurrPlayer, Player1Stones, Player2Stones):-
+show_options_diagonal(Elements, PositionIndex, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
    write('Please select the direction of the movement'), nl, 
    write('1- Right Up'), nl, 
    write('2- Left Up'), nl, 
@@ -295,30 +354,30 @@ show_options_diagonal(Elements, PositionIndex, CurrPlayer, Player1Stones, Player
    write('4- Left Down'), nl, 
    read(Type), 
    (
-        Type = 1 -> move_diagonally(Elements, PositionIndex, -3, CurrPlayer, Player1Stones, Player2Stones); 
-        Type = 2 -> move_diagonally(Elements, PositionIndex, -5, CurrPlayer, Player1Stones, Player2Stones); 
-        Type = 3 -> move_diagonally(Elements, PositionIndex, 5, CurrPlayer, Player1Stones, Player2Stones); 
-        Type = 4 -> move_diagonally(Elements, PositionIndex, 3, CurrPlayer, Player1Stones, Player2Stones)
+        Type = 1 -> move_diagonally(Elements, PositionIndex, -3, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num); 
+        Type = 2 -> move_diagonally(Elements, PositionIndex, -5, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num); 
+        Type = 3 -> move_diagonally(Elements, PositionIndex, 5, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num); 
+        Type = 4 -> move_diagonally(Elements, PositionIndex, 3, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num)
    ). 
 
-move_diagonally(Elements, PositionIndex, Accomulator, CurrPlayer, Player1Stones, Player2Stones):-
+move_diagonally(Elements, PositionIndex, Accomulator, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
     NewPositionIndex is PositionIndex+Accomulator, 
 
     /* If the stone is on the first or last column it cannot move to the left(1st) or to the right(last) */
     can_move_diagonally(PositionIndex, Accomulator),
 
-    move_general(Elements, PositionIndex, NewPositionIndex, CurrPlayer, Player1Stones, Player2Stones).
+    move_general(Elements, PositionIndex, NewPositionIndex, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num).
 
-move_orthogonal(Elements, PositionIndex, Accomulator, CurrPlayer, Player1Stones, Player2Stones):-
+move_orthogonal(Elements, PositionIndex, Accomulator, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
     NewPositionIndex is PositionIndex+Accomulator,
 
     /* Verify if the New Position is Adjacent to the Previous position */
-    verify_teste(PositionIndex, NewPositionIndex),
+    verify_adjacent(PositionIndex, NewPositionIndex),
 
-    move_general(Elements, PositionIndex, NewPositionIndex, CurrPlayer, Player1Stones, Player2Stones).
+    move_general(Elements, PositionIndex, NewPositionIndex, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num).
 
 
-move_general(Elements, PositionIndex, NewPositionIndex, 1, Player1Stones, Player2Stones):-
+move_general(Elements, PositionIndex, NewPositionIndex, 1, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
 
     /* Verify if the next position index is valid */
     is_next_position_valid(NewPositionIndex), 
@@ -336,10 +395,10 @@ move_general(Elements, PositionIndex, NewPositionIndex, 1, Player1Stones, Player
     append(Player1Stones, [NewPositionIndex], NewPlayer1Stones),
     delete(PositionIndex, NewPlayer1Stones, FinalPlayer1Stones),
 
-    finish_player_turn(FinalElements, 1, NewPositionIndex, FinalPlayer1Stones, Player2Stones).
+    finish_player_turn(FinalElements, 1, NewPositionIndex, FinalPlayer1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num).
 
 
-move_general(Elements, PositionIndex, NewPositionIndex, 2, Player1Stones, Player2Stones):-
+move_general(Elements, PositionIndex, NewPositionIndex, 2, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
 
     /* Verify if the next position index is valid */
     is_next_position_valid(NewPositionIndex), 
@@ -357,10 +416,10 @@ move_general(Elements, PositionIndex, NewPositionIndex, 2, Player1Stones, Player
     append(Player2Stones, [NewPositionIndex], NewPlayer2Stones),
     delete(PositionIndex, NewPlayer2Stones, FinalPlayer2Stones),
 
-    finish_player_turn(FinalElements, 2, NewPositionIndex, Player1Stones, FinalPlayer2Stones).
+    finish_player_turn(FinalElements, 2, NewPositionIndex, Player1Stones, FinalPlayer2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num).
 
 
-drop_stone_menu(Elements, CurrPlayer, Player1Stones, Player2Stones):-
+drop_stone_menu(Elements, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
 
    /* Insert the stone on the desired position */
 
@@ -379,46 +438,58 @@ drop_stone_menu(Elements, CurrPlayer, Player1Stones, Player2Stones):-
    /* Verify if position is taken */
    not_taken_rec(Elements, PositionIndex),
 
-   drop_stone_currPlayer(Elements, PositionIndex, CurrPlayer, Player1Stones, Player2Stones).
+   drop_stone_currPlayer(Elements, PositionIndex, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num).
 
 
 /* Drops stone depending on the current player */ 
-drop_stone_currPlayer(Elements, PositionIndex, 1, Player1Stones, Player2Stones):-
+drop_stone_currPlayer(Elements, PositionIndex, 1, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
     /* Update the board -> Criar um novo tabuleiro */
    replace(Elements, PositionIndex, 1, NewElements),
    /* Update Player Stones */ 
    append(Player1Stones, [PositionIndex], NewPlayer1Stones),
+   /* Update Player Stones Number*/
+   NewStone1Num is Stone1Num-1,
 
-   finish_player_turn(NewElements, 1, PositionIndex, NewPlayer1Stones, Player2Stones).
+   finish_player_turn(NewElements, 1, PositionIndex, NewPlayer1Stones, Player2Stones, CapturedStones1, CapturedStones2, NewStone1Num, Stone2Num).
 
-drop_stone_currPlayer(Elements, PositionIndex, 2, Player1Stones, Player2Stones):-
+drop_stone_currPlayer(Elements, PositionIndex, 2, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
    /* Update the board -> Criar um novo tabuleiro */
    replace(Elements, PositionIndex, 2, NewElements),
    /* Update Player Stones */ 
    append(Player2Stones, [PositionIndex], NewPlayer2Stones),
+   /* Update Player Stones Number*/
+   NewStone2Num is Stone2Num-1,
 
-   finish_player_turn(NewElements, 2, PositionIndex, Player1Stones, NewPlayer2Stones).
+   finish_player_turn(NewElements, 2, PositionIndex, Player1Stones, NewPlayer2Stones, CapturedStones1, CapturedStones2, Stone1Num, NewStone2Num).
 
 /* Finishes the player turn */ 
-finish_player_turn(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones):-
+finish_player_turn(Elements, 1, LastPlayedIndex, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
    /* Print the new board */
    draw_board(Elements),
 
-   /* Change Player Turn */
-   change_turn_player(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones).
+   /* Verify if player 1 won */
+   if(verify_win_state(Elements, 1, CapturedStones1), true, change_turn_player(Elements, 1, LastPlayedIndex, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num)).
+
+
+finish_player_turn(Elements, 2, LastPlayedIndex, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
+   /* Print the new board */
+   draw_board(Elements),
+
+   /* Verify if player 2 won */
+   if(verify_win_state(Elements, 2, CapturedStones2), true, change_turn_player(Elements, 2, LastPlayedIndex, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num)).
 
 % ------------------- Change Player Turn -----------------------
 
-change_turn_player(Elements, 1, LastPlayedIndex, Player1Stones, Player2Stones):-
+change_turn_player(Elements, 1, LastPlayedIndex, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
     /* Player 1 */
     NewPlayer is 1+1, 
-    player_turn(Elements, NewPlayer, LastPlayedIndex, Player1Stones, Player2Stones).
+    player_turn(Elements, NewPlayer, LastPlayedIndex, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num).
 
 
-change_turn_player(Elements, 2, LastPlayedIndex, Player1Stones, Player2Stones):-
+change_turn_player(Elements, 2, LastPlayedIndex, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num):-
     /* Player 2 */
     NewPlayer is 2-1, 
-    player_turn(Elements, NewPlayer, LastPlayedIndex, Player1Stones, Player2Stones).
+    player_turn(Elements, NewPlayer, LastPlayedIndex, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num).
 
 % ------------------- Verify if the stone that the player wants to move belongs to him -----------------------
 
@@ -457,30 +528,8 @@ can_move_diagonally(PositionIndex, Accomulator):-
 
 
 % ------------------- Verify if next position is adjacent  -----------------------
-/*
-verify_adjacent(PositionIndex, NewPositionIndex) :-
-    PositionIndex = 3 -> Adjacents_boarders(PositionIndex,NPositionIndex);
 
-    NewPositionIndex is PositionIndex + 1;
-    NewPositionIndex is PositionIndex + 3;
-    NewPositionIndex is PositionIndex + 4;
-    NewPositionIndex is PositionIndex + 5;
-    NewPositionIndex is PositionIndex - 1;
-    NewPositionIndex is PositionIndex - 3;
-    NewPositionIndex is PositionIndex - 4.
-*/
- 
-/*
-    (NewPositionIndex < 4 , NewPositionIndex > -1 , PositionIndex < 4, PositionIndex > -1); 
-    (NewPositionIndex < 8, NewPositionIndex > 3, PositionIndex < 8, PositionIndex > 3); 
-    (NewPositionIndex < 12, NewPositionIndex > 7, PositionIndex < 12, PositionIndex > 7); 
-    (NewPositionIndex < 16, NewPositionIndex > 11, PositionIndex < 16, PositionIndex > 11);
-    ((NewPositionIndex - PositionIndex) > 3, (NewPositionIndex - PositionIndex) < 5); 
-    ((NewPositionIndex - PositionIndex))
-  
- */
-
- verify_teste(PositionIndex, NewPositionIndex) :- 
+ verify_adjacent(PositionIndex, NewPositionIndex) :- 
     (NewPositionIndex < 4 , NewPositionIndex > -1 , PositionIndex < 4, PositionIndex > -1); 
     (NewPositionIndex < 8, NewPositionIndex > 3, PositionIndex < 8, PositionIndex > 3); 
     (NewPositionIndex < 12, NewPositionIndex > 7, PositionIndex < 12, PositionIndex > 7); 
@@ -519,111 +568,63 @@ replace([_|T], 0, X, [X|T]).
 replace([H|T], I, X, [H|R]):- I > -1, NI is I-1, replace(T, NI, X, R), !.
 replace(L, _, _, L).
 
-% ---------------- Remove an element from the list ----------------------------
-delete(X, [X|Tail], Tail).
-delete(X, [Y|Tail], [Y|Tail1]) :- delete(X, Tail, Tail1).
+% ---------------- Verify if player won ----------------------------
 
-% ---------------- Win Conditions ----------------------------
+verify_win_state(Elements, CurrPlayer, CapturedStones):- 
+    WinBoards = [
+                    /* ROW BOARD WIN */
+                    [CurrPlayer, CurrPlayer, CurrPlayer, _, _, _, _, _, _, _, _, _, _, _, _, _],
+                    [_, CurrPlayer, CurrPlayer, CurrPlayer, _, _, _, _, _, _, _, _, _, _, _, _],
+                    [_, _, _, _, CurrPlayer, CurrPlayer, CurrPlayer, _, _, _, _, _, _, _, _, _],
+                    [_, _, _, _, _, CurrPlayer, CurrPlayer, CurrPlayer, _, _, _, _, _, _, _, _],
+                    [_, _, _, _, _, _, _, _, CurrPlayer, CurrPlayer, CurrPlayer, _, _, _, _, _],
+                    [_, _, _, _, _, _, _, _, _, CurrPlayer, CurrPlayer, CurrPlayer, _, _, _, _],
+                    [_, _, _, _, _, _, _, _, _, _, _, _, CurrPlayer, CurrPlayer, CurrPlayer, _],
+                    [_, _, _, _, _, _, _, _, _, _, _, _, _, CurrPlayer, CurrPlayer, CurrPlayer],
+                    /* COLUMN BOARD WIN */
+                    [CurrPlayer, _, _, _, CurrPlayer, _, _, _, CurrPlayer, _, _, _, _, _, _, _],
+                    [_, _, _, _, CurrPlayer, _, _, _, CurrPlayer, _, _, _, CurrPlayer, _, _, _],
+                    [_, CurrPlayer, _, _, _, CurrPlayer, _, _, _, CurrPlayer, _, _, _, _, _, _],
+                    [_, _, _, _, _, CurrPlayer, _, _, _, CurrPlayer, _, _, _, CurrPlayer, _, _],
+                    [_, _, CurrPlayer, _, _, _, CurrPlayer, _, _, _, CurrPlayer, _, _, _, _, _],
+                    [_, _, _, _, _, _, CurrPlayer, _, _, _, CurrPlayer, _, _, _, CurrPlayer, _],
+                    [_, _, _, CurrPlayer, _, _, _, CurrPlayer, _, _, _, CurrPlayer, _, _, _, _],
+                    [_, _, _, _, _, _, _, CurrPlayer, _, _, _, CurrPlayer, _, _, _, CurrPlayer],
+                    /* DIAGONAL BOARD WIN */
+                    [CurrPlayer, _, _, _, _, CurrPlayer, _, _, _, _, CurrPlayer, _, _, _, _, _],
+                    [_, _, _, _, _, CurrPlayer, _, _, _, _, CurrPlayer, _, _, _, _, CurrPlayer],
+                    [_, CurrPlayer, _, _, _, _, CurrPlayer, _, _, _, _, CurrPlayer, _, _, _, _],
+                    [_, _, _, _, CurrPlayer, _, _, _, _, CurrPlayer, _, _, _, _, CurrPlayer, _],
+                    [_, _, _, CurrPlayer, _, _, CurrPlayer, _, _, CurrPlayer, _, _, _, _, _, _],
+                    [_, _, _, _, _, _, CurrPlayer, _, _, CurrPlayer, _, _, CurrPlayer, _, _, _],
+                    [_, _, CurrPlayer, _, _, CurrPlayer, _, _, CurrPlayer, _, _, _, _, _, _, _],
+                    [_, _, _, _, _, _, _, CurrPlayer, _, _, CurrPlayer, _, _, CurrPlayer, _, _]
+                ],
 
-win_condition(Board, CurrPlayer, CapturedStones, Winner) :-
-    % Check for 3-in-a-row patterns in rows and columns
-    (
-        check_3inrow(Board, CurrPlayer, I, J)
-    ;
-        % Check for 3-in-a-row patterns in diagonal
-        check_3inrow(Board, CurrPlayer, I, J)
-    ),
-    winner(CurrPlayer).
+    if(member(Elements, WinBoards), output_win_screen(CurrPlayer), false),
+    if(CapturedStones == 6, output_win_screen(CurrPlayer), false).
 
-win_condition(_, CurrPlayer, CapturedStones, _) :-
-    % Check for 6 captured enemy stones
-    CapturedStones =:= 6,
-    winner(CurrPlayer).
-
-%---------Verify if all elements of List are equal to Value passed-----------------------
-
-all_same([X], X).
-all_same([X|Xs], X) :-
-    all_same(Xs, X).
-
-% ---------Verify if the combination of 3 cells at positions (I,J), (I,J+1), and (I,J+2) on the board is a 3-in-a-row pattern for CurrPlayer.-------------
-
-check_3inrow(Board, CurrPlayer, I, J) :-
-    nth1(I, Board, Row),
-    nth1(J, Row, Cell1),
-    J1 is J+1,
-    nth1(J1, Row, Cell2),
-    J2 is J+2,
-    nth1(J2, Row, Cell3),
-    all_same([Cell1, Cell2, Cell3], CurrPlayer).
-
-%---------Verify if the combination of 3 cells at positions (I,J), (I+1,J), and (I+2,J) on the board is a 3-in-a-row pattern for CurrPlayer.-------------
-
-check_3inrow(Board, CurrPlayer, I, J) :-
-    nth1(I, Board, Row1),
-    nth1(J, Row1, Cell1),
-    I1 is I+1,
-    nth1(I1, Board, Row2),
-    nth1(J, Row2, Cell2),
-    I2 is I+2,
-    nth1(I2, Board, Row3),
-    nth1(J, Row3, Cell3),
-    all_same([Cell1, Cell2, Cell3], CurrPlayer).
-
-
-%---------Verify if the combination of 3 cells at positions (I,J), (I+1,J+1), and (I+2,J+2) on the board is a 3-in-a-row pattern for CurrPlayer-----
-
-check_3inrow(Board, CurrPlayer, I, J) :-
-    nth1(I, Board, Row1),
-    nth1(J, Row1, Cell1),
-    
-    I1 is I+1,
-    nth1(I1, Board, Row2),
-
-    J1 is J+1,
-    nth1(J1, Row2, Cell2),
-
-    I2 is I+2,
-    nth1(I2, Board, Row3),
-
-    J2 is J+2,
-    nth1(J2, Row3, Cell3),
-
-    all_same([Cell1, Cell2, Cell3], CurrPlayer).
-
-%---------Verify if the combination of 3 cells at positions (I,J), (I+1,J-1), and (I+2,J-2) on the board is a 3-in-a-row pattern for CurrPlayer.------
-
-check_3inrow(Board, CurrPlayer, I, J) :-
-    nth1(I, Board, Row1),
-    nth1(J, Row1, Cell1),
-    I1 is I+1,
-    nth1(I1, Board, Row2),
-
-    J1 is J-1,
-    nth1(J1, Row2, Cell2),
-
-    I2 is I+2,
-    nth1(I2, Board, Row3),
-
-    J2 is J-2,
-    nth1(J2, Row3, Cell3),
-
-    all_same([Cell1, Cell2, Cell3], CurrPlayer).
-
-%---------Extracts the first column of Matrix and unifies it with Column, and the rest of the matrix with Rest.------------------------------
-
-first_col([[X|Xs]|Ys], [X|Zs], [Xs|Rs]) :-
-    first_col(Ys, Zs, Rs).
-first_col([], [], []).
-
-winner(1):-
-    write('Player 1 wins!').
-winner(2):-
-    write('Player 2 wins!').
+output_win_screen(CurrPlayer):-
+    write('----------------------------------'),nl,
+    write('-------------- Player '), write(CurrPlayer), write(' Won --------------'), nl,
+    write('----------------------------------'), nl,
+    write('Closing game in: '), nl,
+    sleep(1),
+    write('5 '), nl,
+    sleep(1),
+    write('4 '), nl,
+    sleep(1),
+    write('3 '), nl,
+    sleep(1),
+    write('2 '), nl,
+    sleep(1),
+    write('1 '), nl,
+    nl,
+    halt.   
 
 % ------------------- Start Game -----------------------
 
 game:- board([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],Board),
        get_elements(Board,Elements),
-       draw_board(Elements),       
-       player_turn(Elements, 1, 0, [], []).
+       draw_board(Elements),
+       player_turn(Elements, 1, 0, [], [], 0, 0, 8, 8).
