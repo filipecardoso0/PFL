@@ -6,6 +6,10 @@
 | Pedro Joaquim Alves Oliveira  | 202004324 |      50%     |
 
 ## Instalação e execução
+Para a consulta do jogo:
+PROLOG
+consult('.../src/game.pl')
+play.
 
 
 ## Descrição do jogo
