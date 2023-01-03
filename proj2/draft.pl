@@ -2,7 +2,7 @@
 ?- use_module(library(random)).
 
 % -------------------Menu and Game Selector----------------------------------
-play :- 
+menu :- 
     write('1. Choose Game Mode:'), nl,
     write('2.  Settings:'), nl,
     write('3. Exit.'), nl,
@@ -42,15 +42,15 @@ settings:-
     ).
 bot_vs_bot:- 
     write('Starting Computer vs Computer game...'),
-    start_bot_bot(Bot, Bot).
+    play(Bot,Bot).
 
 human_vs_human:- 
     write('Starting Human vs Human game...'),
-    start_h_h(Player, Player).
+    play(Player,Player).
 
 human_vs_easy_bot:-
     write('Starting Human vs Bot game...'),
-    start_h_bot(Player, Bot).
+    play(Player,Bot).
 
 % -------------------Construct Board -----------------------
 
@@ -720,6 +720,7 @@ not_taken_rec([H|T], Index) :- Index > -1,  I1 is Index-1, not_taken_rec(T, I1).
 % ------------------- BOT TURN MANAGER -------------------
 bot_turn(Elements, CurrPlayer, LastPlayedIndex, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num, GameType):-
     /* DEBUG INFO */
+    write('TOU AQUI BOT TURN 1'), nl, 
     write('Player 1 Stones '), write(Player1Stones), nl,
     write('Player 2 Stones '), write(Player2Stones), nl,
     write('Player 1 Captured Stones '), write(CapturedStones1), nl,
@@ -741,6 +742,7 @@ bot_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones, Captured
 
 /* IF STONE COUNT == MAX -> ONLY DROP */ 
 bot_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, 8, 3):-
+    write('TOU AQUI 2'),
     write('BOT: '), write(CurrPlayer), write(' TURN'), nl, 
     /* DROP STONE */
     search_for0_rec(Elements, [], 0, Elements, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, 8, 3).
@@ -810,7 +812,7 @@ generate_drop_random(NewList, Elements, 1, Player1Stones, Player2Stones, Capture
     NewStone1Num is Stone1Num-1, 
 
     /* Update Elements List */
-    replace(Elements, RandomVal, 1, NewElements),
+    replace(Elements, RandomVal, 2, NewElements),
     
     /* Change Player Turn */ 
     finish_player_turn(NewElements, 1, RandomVal, NewPlayer1Stones, Player2Stones, CapturedStones1, CapturedStones2, NewStone1Num, Stone2Num, 3).
@@ -947,8 +949,6 @@ search_forPiece_rec([H|T], NewList, Index, Elements, CurrPlayer, Player1Stones, 
 
 bot_jump_over_stone(Elements, 2, LastPlayedIndex, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num, GameType):-
 /* Saber as pedras que estão próximas daquela que está perto da nossa */ 
-
-    write('BOT: 2 TURN'), nl, 
    
     (Up is LastPlayedIndex-4, member(Up,Player2Stones) -> Stone1Index is Up; Stone1Index is -1),
     (Down is LastPlayedIndex+4, member(Down,Player2Stones) -> Stone2Index is Down; Stone2Index is -1),
@@ -980,9 +980,7 @@ bot_jump_over_stone(Elements, 2, LastPlayedIndex, Player1Stones, Player2Stones, 
 
 bot_jump_over_stone(Elements, 1, LastPlayedIndex, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num, GameType):-
 /* Saber as pedras que estão próximas daquela que está perto da nossa */ 
-    
-    write('BOT: 1 TURN'), nl, 
-
+   
     (Up is LastPlayedIndex-4, member(Up,Player1Stones) -> Stone1Index is Up; Stone1Index is -1),
     (Down is LastPlayedIndex+4, member(Down,Player1Stones) -> Stone2Index is Down; Stone2Index is -1),
     (Right is LastPlayedIndex+1, member(Right,Player1Stones) -> Stone3Index is Right; Stone3Index is -1),
@@ -1019,7 +1017,7 @@ bot_make_jump(Elements, CurrPlayer, Player1Stones, Player2Stones, Jumpdirection,
     if(is_next_position_valid(Attempt1), true, true), 
 
     /* Verificar se a Posição a seguir está ocupada pelo inimigo ou tem uma pedra do player atual */
-    if(occupied_rec(Elements, Attempt1), bot_turn_DropOrMove(Elements, CurrPlayer, Player1Stones, Player2Stones, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num, GameType), bot_finalize_make_jump(Elements, CurrPlayer, StartPoint, Player1Stones, Player2Stones, Attempt1, StoneToBeDeleted, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num, GameType)).
+    if(occupied_rec(Elements, Attempt1), write('Position occupied! Attempting next position...'), bot_finalize_make_jump(Elements, CurrPlayer, StartPoint, Player1Stones, Player2Stones, Attempt1, StoneToBeDeleted, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num, GameType)).
 
 bot_finalize_make_jump(Elements, 1, StartPoint, Player1Stones, Player2Stones, NewStonePosition, StoneToBeDeleted, CapturedStones1, CapturedStones2, Stone1Num, Stone2Num, GameType):-
     /* Atualizar a Posição da Peça */ 
@@ -1062,18 +1060,18 @@ bot_finalize_make_jump(Elements, 2, StartPoint, Player1Stones, Player2Stones, Ne
 
 % ------------------- Start Game -----------------------
 
-start_h_h(Player, Player):- board([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],Board),
+play(Player, Player):- board([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],Board),
        get_elements(Board,Elements),
        draw_board(Elements),
        player_turn(Elements, 1, 0, [], [], 0, 0, 8, 8, 1).
 
-start_h_bot(Player, Bot) :- 
+play(Player, Bot) :- 
     board([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],Board),
     get_elements(Board,Elements),
     draw_board(Elements),
     player_turn(Elements, 1, 0, [], [], 0, 0, 8, 8, 2).
 
-start_bot_bot(Bot, Bot) :- 
+play(Bot, Bot) :- 
     board([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],Board),
     get_elements(Board,Elements),
     draw_board(Elements),

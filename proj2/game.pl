@@ -17,6 +17,20 @@ main_menu:-
 % Game mode: Computer vs Computer
 bot_vs_bot:-
     write('Starting Computer vs Computer game...').
+    play(bot,bot):- 
+        board([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],Board),
+        get_elements(Board,Elements),
+        draw_board(Elements),
+        player_turn(Elements, 1, 0, [], [], 0, 0, 8, 8).
+
+    /* 1a jogada apenas dropar pedra random
+    /* A partir dai, pedir um valor random entre 1 e 2
+    /* 1 representa o Drop
+    /* 2 representa o move
+    /* Se calhar 1 random das pecas do Board disponiveis
+    /* Se calhar 2 random dos moves disponiveis no Board com as pecas do player
+    
+
 
 % Game mode: Human vs Human
 human_vs_human:-
